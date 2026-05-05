@@ -1,0 +1,1363 @@
+/* ═══════════════════════════════════════════════════════════════════
+   MenuMate Menu Themes — CSS Variable System v2
+   4 Themes: Dark Premium · Light Minimal · Green Fresh · Luxury Gold
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. DARK PREMIUM (Default) ──────────────────────────────── */
+[data-menu-theme="dark"] {
+  --m-bg: #0B0B12;
+  --m-bg-raised: #111119;
+  --m-card: #17171F;
+  --m-card-hover: #1D1D27;
+  --m-card-border: rgba(255,255,255,0.05);
+  --m-border: rgba(255,255,255,0.07);
+  --m-border-strong: rgba(255,255,255,0.14);
+  --m-primary: #FF6B35;
+  --m-primary-hover: #FF8555;
+  --m-primary-soft: rgba(255,107,53,0.10);
+  --m-primary-glow: rgba(255,107,53,0.25);
+  --m-primary-text: #FFFFFF;
+  --m-accent: #FF6B35;
+  --m-accent-soft: rgba(255,107,53,0.08);
+  --m-text: #F2F2F7;
+  --m-text-secondary: #A8A8B8;
+  --m-text-muted: #5E5E72;
+  --m-text-inverse: #0B0B12;
+  --m-header-bg: rgba(11,11,18,0.85);
+  --m-header-border: rgba(255,255,255,0.05);
+  --m-bar-bg: rgba(11,11,18,0.90);
+  --m-bar-border: rgba(255,255,255,0.05);
+  --m-overlay: rgba(0,0,0,0.60);
+  --m-sheet-bg: #17171F;
+  --m-sheet-border: rgba(255,255,255,0.08);
+  --m-input-bg: #111119;
+  --m-input-border: rgba(255,255,255,0.08);
+  --m-input-focus-border: rgba(255,107,53,0.35);
+  --m-skeleton: #1D1D27;
+  --m-skeleton-shine: #272733;
+  --m-success: #34C759;
+  --m-success-soft: rgba(52,199,89,0.10);
+  --m-error: #FF453A;
+  --m-error-soft: rgba(255,69,58,0.10);
+  --m-warning: #FF9F0A;
+  --m-veg: #30D158;
+  --m-nonveg: #FF453A;
+  --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
+  --m-shadow: 0 2px 8px rgba(0,0,0,0.30);
+  --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.40);
+  --m-img-placeholder: #111119;
+  --m-fab-bg: #FF6B35;
+  --m-fab-shadow: 0 4px 16px rgba(255,107,53,0.35);
+  --m-fab-text: #FFFFFF;
+  --m-badge-bg: rgba(255,107,53,0.14);
+  --m-badge-text: #FF8555;
+  --m-soldout-bg: rgba(0,0,0,0.55);
+  --m-footer-text: #42424F;
+  --m-footer-accent: #FF6B35;
+  --m-pill-active-bg: #FF6B35;
+  --m-pill-active-text: #FFFFFF;
+  --m-pill-bg: rgba(255,255,255,0.06);
+  --m-pill-text: #A8A8B8;
+  --m-add-btn-bg: #FF6B35;
+  --m-add-btn-text: #FFFFFF;
+  --m-qty-bg: #FF6B35;
+  --m-qty-text: #FFFFFF;
+}
+
+/* ─── 2. LIGHT MINIMAL ───────────────────────────────────────── */
+[data-menu-theme="light"] {
+  --m-bg: #F4F4F8;
+  --m-bg-raised: #EAEAEF;
+  --m-card: #FFFFFF;
+  --m-card-hover: #F9F9FB;
+  --m-card-border: rgba(0,0,0,0.05);
+  --m-border: rgba(0,0,0,0.07);
+  --m-border-strong: rgba(0,0,0,0.14);
+  --m-primary: #FF6B35;
+  --m-primary-hover: #E85A20;
+  --m-primary-soft: rgba(255,107,53,0.07);
+  --m-primary-glow: rgba(255,107,53,0.18);
+  --m-primary-text: #FFFFFF;
+  --m-accent: #FF6B35;
+  --m-accent-soft: rgba(255,107,53,0.05);
+  --m-text: #1A1A22;
+  --m-text-secondary: #5A5A68;
+  --m-text-muted: #8C8C98;
+  --m-text-inverse: #FFFFFF;
+  --m-header-bg: rgba(244,244,248,0.85);
+  --m-header-border: rgba(0,0,0,0.05);
+  --m-bar-bg: rgba(244,244,248,0.90);
+  --m-bar-border: rgba(0,0,0,0.05);
+  --m-overlay: rgba(0,0,0,0.35);
+  --m-sheet-bg: #FFFFFF;
+  --m-sheet-border: rgba(0,0,0,0.06);
+  --m-input-bg: #EDEDF0;
+  --m-input-border: rgba(0,0,0,0.08);
+  --m-input-focus-border: rgba(255,107,53,0.30);
+  --m-skeleton: #EAEAEF;
+  --m-skeleton-shine: #F4F4F8;
+  --m-success: #30B050;
+  --m-success-soft: rgba(48,176,80,0.07);
+  --m-error: #E53935;
+  --m-error-soft: rgba(229,57,53,0.07);
+  --m-warning: #EF8F00;
+  --m-veg: #30B050;
+  --m-nonveg: #E53935;
+  --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --m-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+  --m-img-placeholder: #EAEAEF;
+  --m-fab-bg: #FF6B35;
+  --m-fab-shadow: 0 4px 16px rgba(255,107,53,0.30);
+  --m-fab-text: #FFFFFF;
+  --m-badge-bg: rgba(255,107,53,0.08);
+  --m-badge-text: #E85A20;
+  --m-soldout-bg: rgba(255,255,255,0.55);
+  --m-footer-text: #A0A0AA;
+  --m-footer-accent: #FF6B35;
+  --m-pill-active-bg: #FF6B35;
+  --m-pill-active-text: #FFFFFF;
+  --m-pill-bg: rgba(0,0,0,0.05);
+  --m-pill-text: #5A5A68;
+  --m-add-btn-bg: #FF6B35;
+  --m-add-btn-text: #FFFFFF;
+  --m-qty-bg: #FF6B35;
+  --m-qty-text: #FFFFFF;
+}
+
+/* ─── 3. GREEN FRESH ─────────────────────────────────────────── */
+[data-menu-theme="green"] {
+  --m-bg: #081A0E;
+  --m-bg-raised: #0D2215;
+  --m-card: #13291C;
+  --m-card-hover: #183222;
+  --m-card-border: rgba(52,211,153,0.07);
+  --m-border: rgba(52,211,153,0.09);
+  --m-border-strong: rgba(52,211,153,0.18);
+  --m-primary: #34D399;
+  --m-primary-hover: #10B981;
+  --m-primary-soft: rgba(52,211,153,0.10);
+  --m-primary-glow: rgba(52,211,153,0.22);
+  --m-primary-text: #081A0E;
+  --m-accent: #34D399;
+  --m-accent-soft: rgba(52,211,153,0.08);
+  --m-text: #E6F5EC;
+  --m-text-secondary: #7CC49A;
+  --m-text-muted: #4A8A62;
+  --m-text-inverse: #081A0E;
+  --m-header-bg: rgba(8,26,14,0.85);
+  --m-header-border: rgba(52,211,153,0.07);
+  --m-bar-bg: rgba(8,26,14,0.90);
+  --m-bar-border: rgba(52,211,153,0.07);
+  --m-overlay: rgba(0,0,0,0.60);
+  --m-sheet-bg: #13291C;
+  --m-sheet-border: rgba(52,211,153,0.08);
+  --m-input-bg: #0D2215;
+  --m-input-border: rgba(52,211,153,0.09);
+  --m-input-focus-border: rgba(52,211,153,0.28);
+  --m-skeleton: #183222;
+  --m-skeleton-shine: #1E3C2A;
+  --m-success: #34D399;
+  --m-success-soft: rgba(52,211,153,0.10);
+  --m-error: #FB7185;
+  --m-error-soft: rgba(251,113,133,0.10);
+  --m-warning: #FBBF24;
+  --m-veg: #34D399;
+  --m-nonveg: #FB7185;
+  --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.28);
+  --m-shadow: 0 2px 8px rgba(0,0,0,0.30);
+  --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.40);
+  --m-img-placeholder: #0D2215;
+  --m-fab-bg: #34D399;
+  --m-fab-shadow: 0 4px 16px rgba(52,211,153,0.30);
+  --m-fab-text: #081A0E;
+  --m-badge-bg: rgba(52,211,153,0.14);
+  --m-badge-text: #5EEAB0;
+  --m-soldout-bg: rgba(0,0,0,0.55);
+  --m-footer-text: #2E6A44;
+  --m-footer-accent: #34D399;
+  --m-pill-active-bg: #34D399;
+  --m-pill-active-text: #081A0E;
+  --m-pill-bg: rgba(52,211,153,0.08);
+  --m-pill-text: #7CC49A;
+  --m-add-btn-bg: #34D399;
+  --m-add-btn-text: #081A0E;
+  --m-qty-bg: #34D399;
+  --m-qty-text: #081A0E;
+}
+
+/* ─── 4. LUXURY GOLD ─────────────────────────────────────────── */
+[data-menu-theme="gold"] {
+  --m-bg: #12100C;
+  --m-bg-raised: #1A1712;
+  --m-card: #221E16;
+  --m-card-hover: #2A261E;
+  --m-card-border: rgba(212,168,83,0.07);
+  --m-border: rgba(212,168,83,0.09);
+  --m-border-strong: rgba(212,168,83,0.18);
+  --m-primary: #D4A853;
+  --m-primary-hover: #C49A42;
+  --m-primary-soft: rgba(212,168,83,0.10);
+  --m-primary-glow: rgba(212,168,83,0.22);
+  --m-primary-text: #12100C;
+  --m-accent: #D4A853;
+  --m-accent-soft: rgba(212,168,83,0.08);
+  --m-text: #F0E6D2;
+  --m-text-secondary: #B0A080;
+  --m-text-muted: #7A6A4E;
+  --m-text-inverse: #12100C;
+  --m-header-bg: rgba(18,16,12,0.85);
+  --m-header-border: rgba(212,168,83,0.07);
+  --m-bar-bg: rgba(18,16,12,0.90);
+  --m-bar-border: rgba(212,168,83,0.07);
+  --m-overlay: rgba(0,0,0,0.60);
+  --m-sheet-bg: #221E16;
+  --m-sheet-border: rgba(212,168,83,0.08);
+  --m-input-bg: #1A1712;
+  --m-input-border: rgba(212,168,83,0.09);
+  --m-input-focus-border: rgba(212,168,83,0.28);
+  --m-skeleton: #2A261E;
+  --m-skeleton-shine: #363028;
+  --m-success: #7ED957;
+  --m-success-soft: rgba(126,217,87,0.10);
+  --m-error: #FB7185;
+  --m-error-soft: rgba(251,113,133,0.10);
+  --m-warning: #FBBF24;
+  --m-veg: #7ED957;
+  --m-nonveg: #FB7185;
+  --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.28);
+  --m-shadow: 0 2px 8px rgba(0,0,0,0.32);
+  --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.42);
+  --m-img-placeholder: #1A1712;
+  --m-fab-bg: #D4A853;
+  --m-fab-shadow: 0 4px 16px rgba(212,168,83,0.30);
+  --m-fab-text: #12100C;
+  --m-badge-bg: rgba(212,168,83,0.14);
+  --m-badge-text: #E0C070;
+  --m-soldout-bg: rgba(0,0,0,0.55);
+  --m-footer-text: #5A4E38;
+  --m-footer-accent: #D4A853;
+  --m-pill-active-bg: #D4A853;
+  --m-pill-active-text: #12100C;
+  --m-pill-bg: rgba(212,168,83,0.08);
+  --m-pill-text: #B0A080;
+  --m-add-btn-bg: #D4A853;
+  --m-add-btn-text: #12100C;
+  --m-qty-bg: #D4A853;
+  --m-qty-text: #12100C;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Menu Component Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Scrollbar Hide ─────────────────────────────────────────── */
+.menu-scroll-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.menu-scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Skeleton Card ──────────────────────────────────────────── */
+.menu-skeleton {
+  background: var(--m-skeleton);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+.menu-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--m-skeleton-shine) 40%,
+    var(--m-skeleton-shine) 60%,
+    transparent 100%
+  );
+  animation: menu-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes menu-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ─── Menu Item Card ─────────────────────────────────────────── */
+.menu-card {
+  background: var(--m-card);
+  border: 1px solid var(--m-card-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--m-shadow-sm);
+  transition: transform 150ms ease, box-shadow 200ms ease;
+  cursor: pointer;
+}
+.menu-card:active {
+  transform: scale(0.97);
+}
+
+.menu-card-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--m-img-placeholder);
+  overflow: hidden;
+}
+
+.menu-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.menu-card-img-loaded {
+  opacity: 1;
+}
+
+.menu-card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-food-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.menu-badge-best {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  z-index: 2;
+  line-height: 1.4;
+}
+
+.menu-soldout-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--m-soldout-bg);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.menu-soldout-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--m-text);
+  background: var(--m-card);
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.01em;
+}
+
+.menu-card-content {
+  padding: 8px 10px 10px;
+}
+
+.menu-card-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.menu-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.menu-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-card-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--m-text);
+  letter-spacing: -0.02em;
+}
+
+/* ─── Add Button ─────────────────────────────────────────────── */
+.menu-add-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--m-add-btn-bg);
+  color: var(--m-add-btn-text);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 100ms ease, box-shadow 150ms ease;
+  box-shadow: 0 2px 8px var(--m-primary-glow);
+  flex-shrink: 0;
+  padding: 0;
+}
+.menu-add-btn:active {
+  transform: scale(0.88);
+}
+
+/* ─── Quantity Control ───────────────────────────────────────── */
+.menu-qty-control {
+  display: flex;
+  align-items: center;
+  background: var(--m-qty-bg);
+  border-radius: 20px;
+  height: 28px;
+  padding: 0 2px;
+  gap: 0;
+  animation: menu-qty-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.menu-qty-control button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--m-qty-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 100ms ease;
+}
+.menu-qty-control button:active {
+  background: rgba(0,0,0,0.15);
+}
+
+.menu-qty-control span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--m-qty-text);
+  min-width: 16px;
+  text-align: center;
+  user-select: none;
+  line-height: 1;
+}
+
+@keyframes menu-qty-pop {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Category Pill ──────────────────────────────────────────── */
+.menu-pill {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 180ms ease;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+.menu-pill:active {
+  transform: scale(0.95);
+}
+
+.menu-pill-inactive {
+  background: var(--m-pill-bg);
+  color: var(--m-pill-text);
+}
+
+.menu-pill-active {
+  background: var(--m-pill-active-bg);
+  color: var(--m-pill-active-text);
+  box-shadow: 0 2px 10px var(--m-primary-glow);
+}
+
+/* ─── Floating Action Button ─────────────────────────────────── */
+.menu-fab {
+  position: fixed;
+  z-index: 40;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--m-fab-bg);
+  color: var(--m-fab-text);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--m-fab-shadow);
+  transition: transform 150ms ease;
+  padding: 0;
+}
+.menu-fab:active {
+  transform: scale(0.90);
+}
+
+.menu-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--m-text);
+  color: var(--m-text-inverse);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border: 2px solid var(--m-bg);
+  line-height: 1;
+}
+
+.menu-fab-total {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--m-text);
+  background: var(--m-card);
+  padding: 3px 10px;
+  border-radius: 20px;
+  box-shadow: var(--m-shadow);
+  border: 1px solid var(--m-card-border);
+  white-space: nowrap;
+}
+
+/* ─── Service Action Bar (Call Waiter / Ask for Bill) ──────── */
+.menu-service-bar {
+  position: fixed;
+  z-index: 36;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--m-card);
+  border: 1px solid var(--m-card-border);
+  border-radius: 22px;
+  box-shadow: var(--m-shadow-lg), 0 0 0 1px var(--m-card-border);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  animation: menu-service-bar-enter 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 600ms;
+}
+
+@keyframes menu-service-bar-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ─── Service Button ──────────────────────────────────────── */
+.menu-service-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: transform 120ms ease, box-shadow 150ms ease, filter 150ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.menu-service-btn:active {
+  transform: scale(0.96);
+}
+.menu-service-btn:disabled {
+  cursor: default;
+}
+
+/* Hover glow effect (desktop only) */
+@media (hover: hover) {
+  .menu-service-btn:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 2px 12px var(--m-primary-glow);
+  }
+}
+
+/* ─── Primary variant (Call Waiter) ──────────────────────── */
+.menu-service-btn--primary {
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  box-shadow: 0 2px 12px var(--m-primary-glow);
+}
+.menu-service-btn--primary.menu-service-btn--sent {
+  background: var(--m-success);
+  box-shadow: 0 2px 12px rgba(52,199,89,0.25);
+}
+.menu-service-btn--primary .menu-service-btn__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.2);
+}
+.menu-service-btn--primary.menu-service-btn--sent .menu-service-btn__icon {
+  background: rgba(255,255,255,0.2);
+}
+
+/* ─── Secondary variant (Ask for Bill) ───────────────────── */
+.menu-service-btn--secondary {
+  background: var(--m-pill-bg);
+  color: var(--m-text);
+  border: 1px solid var(--m-border);
+}
+.menu-service-btn--secondary.menu-service-btn--sent {
+  background: var(--m-success-soft);
+  color: var(--m-success);
+  border-color: rgba(52,199,89,0.2);
+}
+.menu-service-btn--secondary .menu-service-btn__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--m-primary-soft);
+}
+.menu-service-btn--secondary.menu-service-btn--sent .menu-service-btn__icon {
+  background: rgba(52,199,89,0.15);
+}
+
+/* ─── Service button label ───────────────────────────────── */
+.menu-service-btn__label {
+  line-height: 1;
+}
+
+/* ─── Ripple effect on click ─────────────────────────────── */
+.menu-service-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+.menu-service-btn:active::after {
+  opacity: 1;
+  transition: opacity 0ms;
+}
+
+/* ─── Cart Sheet ─────────────────────────────────────────────── */
+.menu-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--m-overlay);
+  animation: menu-fade-in 200ms ease;
+}
+
+.menu-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 51;
+  background: var(--m-sheet-bg);
+  border-top: 1px solid var(--m-sheet-border);
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.15);
+  animation: menu-slide-up 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--m-border-strong);
+  margin: 10px auto 0;
+}
+
+.menu-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--m-card-border);
+}
+
+.menu-sheet-item-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--m-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-sheet-item-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--m-text);
+  min-width: 48px;
+  text-align: right;
+}
+
+.menu-sheet-note {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--m-input-bg);
+  border: 1.5px solid var(--m-input-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--m-text);
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color 200ms ease;
+}
+.menu-sheet-note:focus {
+  border-color: var(--m-input-focus-border);
+}
+.menu-sheet-note::placeholder {
+  color: var(--m-text-muted);
+}
+
+.menu-sheet-order-btn {
+  width: 100%;
+  height: 52px;
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 120ms ease, opacity 120ms ease;
+  font-family: inherit;
+  box-shadow: 0 4px 14px var(--m-primary-glow);
+  letter-spacing: -0.01em;
+}
+.menu-sheet-order-btn:active {
+  transform: scale(0.98);
+}
+.menu-sheet-order-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Animations ─────────────────────────────────────────────── */
+@keyframes menu-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes menu-slide-up {
+  from { transform: translateY(40px); opacity: 0.7; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes menu-card-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-card-enter {
+  animation: menu-card-enter 300ms ease both;
+}
+
+/* ─── Search Input ───────────────────────────────────────────── */
+.menu-search-pill {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  height: 36px;
+  border-radius: 20px;
+  background: var(--m-input-bg);
+  border: 1.5px solid var(--m-input-border);
+  overflow: hidden;
+  animation: menu-search-expand 200ms ease;
+}
+
+.menu-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--m-text);
+  padding: 0 8px;
+  font-family: inherit;
+}
+.menu-search-input::placeholder {
+  color: var(--m-text-muted);
+}
+
+.menu-search-clear {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--m-pill-bg);
+  border: none;
+  color: var(--m-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+@keyframes menu-search-expand {
+  from { width: 0; opacity: 0; }
+  to { width: auto; opacity: 1; }
+}
+
+/* ─── Theme Switcher Button ──────────────────────────────────── */
+.menu-theme-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--m-pill-bg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-text-secondary);
+  transition: transform 120ms ease, background 120ms ease;
+  font-size: 16px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.menu-theme-btn:active {
+  transform: scale(0.90);
+}
+.menu-theme-btn:hover {
+  background: var(--m-pill-active-bg);
+  color: var(--m-pill-active-text);
+}
+
+/* ─── Empty State ────────────────────────────────────────────── */
+.menu-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.menu-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--m-pill-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* ─── Cart bar qty (used in cart sheet) ──────────────────────── */
+.menu-sheet-qty {
+  display: flex;
+  align-items: center;
+  background: var(--m-qty-bg);
+  border-radius: 20px;
+  height: 30px;
+  padding: 0 2px;
+}
+
+.menu-sheet-qty button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--m-qty-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 100ms ease;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+.menu-sheet-qty button:active {
+  background: rgba(0,0,0,0.15);
+}
+
+.menu-sheet-qty span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--m-qty-text);
+  min-width: 18px;
+  text-align: center;
+  user-select: none;
+  line-height: 1;
+}
+
+/* ─── Fullscreen image viewer ────────────────────────────────── */
+.menu-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: menu-fade-in 200ms ease;
+}
+
+.menu-fullscreen img {
+  max-width: 95%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.menu-fullscreen-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 71;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  padding: 0;
+}
+
+/* ─── Success state ──────────────────────────────────────────── */
+.menu-success-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--m-success-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: menu-success-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms both;
+}
+
+@keyframes menu-success-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.menu-success-card {
+  background: var(--m-primary-soft);
+  border: 1px solid var(--m-primary-glow);
+  border-radius: 14px;
+  padding: 14px 16px;
+  width: 100%;
+}
+
+/* ─── Food type dot in cart (SVG) ────────────────────────────── */
+.menu-food-dot-svg {
+  flex-shrink: 0;
+}
+
+/* ─── Banner Slider ─────────────────────────────────────────── */
+.menu-banner-slider {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  aspect-ratio: 16/6;
+  overflow: hidden;
+  background: var(--m-card);
+}
+
+.menu-banner-track {
+  display: flex;
+  height: 100%;
+  transition: transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.menu-banner-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, transparent 60%);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.menu-banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  max-width: 60%;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.menu-banner-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 200ms ease, transform 150ms ease;
+  padding: 0;
+  color: #1A1A1A;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.menu-banner-slider:hover .menu-banner-arrow {
+  opacity: 1;
+}
+.menu-banner-arrow:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+.menu-banner-arrow-left {
+  left: 8px;
+}
+.menu-banner-arrow-right {
+  right: 8px;
+}
+
+.menu-banner-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+
+.menu-banner-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 200ms ease;
+}
+.menu-banner-dot-active {
+  background: #FFFFFF;
+  width: 18px;
+  border-radius: 3px;
+}
+
+/* ─── Admin Notification Toast ──────────────────────────────── */
+.menu-admin-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--m-card);
+  border: 1px solid var(--m-card-border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: var(--m-shadow-lg);
+  animation: menu-toast-in 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 320px;
+  backdrop-filter: blur(16px);
+}
+
+@keyframes menu-toast-in {
+  0% { transform: translateX(100%) scale(0.9); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.menu-admin-toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--m-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-admin-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-admin-toast-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--m-text);
+}
+
+.menu-admin-toast-desc {
+  font-size: 11px;
+  color: var(--m-text-muted);
+}
+
+/* ─── Card Hover Effect (desktop) ───────────────────────────── */
+@media (hover: hover) {
+  .menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--m-shadow);
+  }
+}
+
+/* ─── Category Bar sticky positioning ──────────────────────── */
+.menu-category-bar {
+  top: 56px; /* Always below header */
+}
+
+/* ─── Responsive grid overrides ──────────────────────────────── */
+@media (max-width: 640px) {
+  /* Service bar: stay centered, slightly tighter */
+  .menu-service-bar {
+    gap: 8px;
+    padding: 6px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    transform: none;
+    border-radius: 18px;
+  }
+  .menu-service-btn {
+    height: 46px;
+    min-height: 46px;
+    padding: 0 14px;
+    font-size: 13px;
+    flex: 1;
+  }
+  .menu-service-btn__icon {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 6px !important;
+  }
+  .menu-service-btn__icon svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  /* Cart FAB shifts up to avoid overlap with service bar */
+  .menu-fab {
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .menu-banner-slider {
+    aspect-ratio: 8/3;
+  }
+  .menu-banner-arrow {
+    opacity: 0.7;
+  }
+  .menu-admin-toast {
+    top: auto;
+    bottom: 100px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+  }
+}
+
+/* ─── Very small screen responsive overrides (320px–360px) ─── */
+@media (max-width: 360px) {
+  /* 1. Service Bar — tighter spacing to prevent overflow */
+  .menu-service-bar {
+    gap: 6px;
+    padding: 5px;
+    left: 10px;
+    right: 10px;
+    border-radius: 16px;
+  }
+  .menu-service-btn {
+    height: 42px;
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .menu-service-btn__icon {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 5px !important;
+  }
+  .menu-service-btn__icon svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  .menu-fab {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .menu-fab-badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+  .menu-fab-total {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  /* 2. Cart Sheet — ensure Place Order button visible on short screens */
+  .menu-sheet {
+    max-height: 90vh;
+  }
+  .menu-sheet-order-btn {
+    height: 48px;
+    font-size: 14px;
+  }
+  .menu-sheet-item {
+    padding: 10px 16px;
+  }
+
+  /* 3. Category Pills — reduced padding for small screens */
+  .menu-pill {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+  .menu-category-bar {
+    padding: 6px 0 !important;
+  }
+
+  /* 4. Menu Cards — tighter padding in 2-column grid */
+  .menu-card-content {
+    padding: 6px 8px 8px;
+  }
+  .menu-card-name {
+    font-size: 12px;
+  }
+  .menu-card-price {
+    font-size: 13px;
+  }
+  .menu-add-btn {
+    width: 26px;
+    height: 26px;
+  }
+  .menu-qty-control {
+    height: 26px;
+  }
+
+  /* 5. Banner Slider — more compact on very small screens */
+  .menu-banner-slider {
+    aspect-ratio: 16/7;
+  }
+  .menu-banner-title {
+    font-size: 13px;
+  }
+
+  /* 6. Header — reduced spacing for 320px screens */
+  .menu-theme-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  .menu-search-pill {
+    height: 32px;
+  }
+  .menu-search-input {
+    font-size: 13px;
+  }
+}
+
+/* ─── Desktop responsive overrides ──────────────────────────── */
+@media (min-width: 641px) {
+  .menu-service-bar {
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  .menu-fab {
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 24px !important;
+  }
+}
