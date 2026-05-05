@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   UtensilsCrossed,
@@ -16,6 +16,7 @@ import {
   Cloud,
   Target,
   DollarSign,
+  Bell,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Restaurant } from '@/types'
@@ -43,9 +44,171 @@ function GreetingIcon() {
   return <Moon className="w-[16px] h-[16px]" style={{ color: 'var(--dash-accent)' }} />
 }
 
-/* ── Sparkline — derives from live data when available ── */
+/* ── Animated Number Counter ── */
+function AnimatedNumber({
+  value,
+  prefix = '',
+  duration = 800,
+}: {
+  value: number
+  prefix?: string
+  duration?: number
+}) {
+  // If a currency prefix is provided, show 2 decimal places; otherwise show integer
+  const decimals = prefix ? 2 : 0
+  const [displayValue, setDisplayValue] = useState(0)
+  const prevValueRef = useRef<number>(0)
+  const rafRef = useRef<number>(0)
+
+  useEffect(() => {
+    // Only re-animate when the value actually changes
+    if (prevValueRef.current === value) return
+
+    const startValue = prevValueRef.current
+    const startTime = performance.now()
+
+    // Ease-out cubic: 1 - (1 - t)³
+    function easeOutCubic(t: number): number {
+      return 1 - Math.pow(1 - t, 3)
+    }
+
+    function animate(currentTime: number) {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const easedProgress = easeOutCubic(progress)
+      const currentValue = startValue + (value - startValue) * easedProgress
+
+      setDisplayValue(currentValue)
+
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
+        prevValueRef.current = value
+        setDisplayValue(value)
+      }
+    }
+
+    cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(animate)
+
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [value, duration])
+
+  const formattedValue = displayValue.toLocaleString('en-IN', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+
+  return <>{prefix}{formattedValue}</>
+}
+
+/* ── Sparkline data — derives from live data when available ── */
 const orderSparkData = [4, 7, 3, 8, 5, 9, 6]
 const revenueSparkData = [30, 50, 20, 60, 45, 70, 55]
+
+/* ── Animated SVG Sparkline Chart ── */
+function SparklineChart({ data, color = '#22c55e', delay = 0 }: { data: number[]; color?: string; delay?: number }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 300 + delay)
+    return () => clearTimeout(timer)
+  }, [delay])
+
+  if (data.length < 2) return null
+
+  const width = 120
+  const height = 32
+  const pad = { top: 4, right: 2, bottom: 4, left: 2 }
+
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+  const chartW = width - pad.left - pad.right
+  const chartH = height - pad.top - pad.bottom
+
+  const points = data.map((val, i) => ({
+    x: pad.left + (i / (data.length - 1)) * chartW,
+    y: pad.top + chartH - ((val - min) / range) * chartH,
+  }))
+
+  /* Catmull-Rom → Cubic Bézier smooth path */
+  function buildSmoothPath(pts: { x: number; y: number }[]) {
+    let d = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)]
+      const p1 = pts[i]
+      const p2 = pts[i + 1]
+      const p3 = pts[Math.min(pts.length - 1, i + 2)]
+      const cp1x = p1.x + (p2.x - p0.x) / 6
+      const cp1y = p1.y + (p2.y - p0.y) / 6
+      const cp2x = p2.x - (p3.x - p1.x) / 6
+      const cp2y = p2.y - (p3.y - p1.y) / 6
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`
+    }
+    return d
+  }
+
+  const linePath = buildSmoothPath(points)
+  const last = points[points.length - 1]
+  const first = points[0]
+  const areaPath =
+    linePath +
+    ` L ${last.x},${height - pad.bottom} L ${first.x},${height - pad.bottom} Z`
+
+  const gradId = `spark-grad-${color.replace('#', '')}`
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '32px',
+        opacity: mounted ? 1 : 0,
+        transition: 'opacity 0.5s ease',
+      }}
+    >
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* Gradient area fill */}
+        <path d={areaPath} fill={`url(#${gradId})`} />
+        {/* Smooth line with draw-in animation */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={1}
+          strokeDasharray={1}
+          strokeDashoffset={mounted ? 0 : 1}
+          style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
+        />
+        {/* Dot indicators at each data point */}
+        {points.map((pt, i) => (
+          <circle
+            key={i}
+            cx={pt.x}
+            cy={pt.y}
+            r={1.8}
+            fill={color}
+            opacity={mounted ? 0.85 : 0}
+            style={{ transition: `opacity 0.3s ease ${0.6 + i * 0.08}s` }}
+          />
+        ))}
+      </svg>
+    </div>
+  )
+}
 
 function SkeletonDashboard() {
   return (
@@ -93,6 +256,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<RestaurantData | null>(null)
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState(false)
+  const [bellShaking, setBellShaking] = useState(false)
+  const prevOrdersCountRef = useRef(0)
 
   const fetchRestaurant = useCallback(async () => {
     try {
@@ -120,6 +285,17 @@ export default function DashboardPage() {
     const interval = setInterval(fetchRestaurant, 15000)
     return () => clearInterval(interval)
   }, [fetchRestaurant])
+
+  // Shake bell when new order count increases
+  useEffect(() => {
+    const current = data?.newOrdersCount ?? 0
+    if (prevOrdersCountRef.current > 0 && current > prevOrdersCountRef.current) {
+      setBellShaking(true)
+      const timer = setTimeout(() => setBellShaking(false), 600)
+      return () => clearTimeout(timer)
+    }
+    prevOrdersCountRef.current = current
+  }, [data?.newOrdersCount])
 
   const handleToggle = async () => {
     if (!data || toggling) return
@@ -196,6 +372,65 @@ export default function DashboardPage() {
           >
             MenuMate
           </span>
+        </div>
+
+        {/* Notification Bell */}
+        <div
+          onClick={() => router.push('/dashboard/orders')}
+          style={{
+            position: 'relative',
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid var(--dash-border)',
+            transition: 'background 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.1)'
+          }}
+          onMouseLeave={(e) => {
+            ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.05)'
+          }}
+        >
+          <Bell
+            className="w-[18px] h-[18px]"
+            style={{
+              color: data?.newOrdersCount ? 'var(--dash-text)' : 'var(--dash-text-3)',
+              animation: bellShaking ? 'bellShake 0.5s ease-in-out' : 'none',
+              transformOrigin: '50% 0%',
+            }}
+          />
+          {(data?.newOrdersCount ?? 0) > 0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '-3px',
+                right: '-3px',
+                minWidth: '18px',
+                height: '18px',
+                borderRadius: '9px',
+                background: '#ef4444',
+                color: '#fff',
+                fontSize: '11px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 4px',
+                lineHeight: 1,
+                animation: 'badgePulse 1.5s ease-in-out infinite',
+                boxShadow: '0 1px 4px rgba(239,68,68,0.4)',
+                pointerEvents: 'none',
+              }}
+            >
+              {data?.newOrdersCount}
+            </span>
+          )}
         </div>
 
         {/* Right: Restaurant name pill */}
@@ -422,21 +657,11 @@ export default function DashboardPage() {
                     color: todayOrders > 0 ? '#60a5fa' : 'var(--dash-text)',
                   }}
                 >
-                  {todayOrders}
+                  <AnimatedNumber value={todayOrders} />
                 </p>
                 {/* Sparkline chart */}
-                <div className="dash-sparkline" style={{ marginTop: '10px', height: '24px' }}>
-                  {orderSparkData.map((val, i) => (
-                    <div
-                      key={i}
-                      className="dash-sparkline-bar"
-                      style={{
-                        height: `${(val / 10) * 100}%`,
-                        background: `rgba(59,130,246,${0.3 + (i / orderSparkData.length) * 0.5})`,
-                        borderRadius: '2px',
-                      }}
-                    />
-                  ))}
+                <div style={{ marginTop: '10px' }}>
+                  <SparklineChart data={orderSparkData} color="#60a5fa" delay={0} />
                 </div>
               </div>
 
@@ -471,21 +696,11 @@ export default function DashboardPage() {
                     color: todayRevenue > 0 ? '#4ade80' : 'var(--dash-text)',
                   }}
                 >
-                  {todayRevenue ? formatPrice(todayRevenue) : '₹0'}
+                  <AnimatedNumber value={todayRevenue} prefix="₹" />
                 </p>
                 {/* Sparkline chart */}
-                <div className="dash-sparkline" style={{ marginTop: '10px', height: '24px' }}>
-                  {revenueSparkData.map((val, i) => (
-                    <div
-                      key={i}
-                      className="dash-sparkline-bar"
-                      style={{
-                        height: `${(val / 80) * 100}%`,
-                        background: `rgba(34,197,94,${0.3 + (i / revenueSparkData.length) * 0.5})`,
-                        borderRadius: '2px',
-                      }}
-                    />
-                  ))}
+                <div style={{ marginTop: '10px' }}>
+                  <SparklineChart data={revenueSparkData} color="#4ade80" delay={100} />
                 </div>
               </div>
             </div>
@@ -874,6 +1089,22 @@ export default function DashboardPage() {
       {restaurant && (
         <AdminNotificationListener restaurantId={restaurant.id} />
       )}
+
+      <style jsx global>{`
+        @keyframes bellShake {
+          0%   { transform: rotate(0deg); }
+          15%  { transform: rotate(15deg); }
+          30%  { transform: rotate(-15deg); }
+          45%  { transform: rotate(10deg); }
+          60%  { transform: rotate(0deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes badgePulse {
+          0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+          50%  { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+          100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+      `}</style>
     </div>
   )
 }

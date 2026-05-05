@@ -13,6 +13,8 @@ import {
   X,
   Star,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Menu as MenuIcon,
   X as XIcon,
   Zap,
@@ -549,6 +551,9 @@ function HeroSection() {
     >
       <div className="mesh-orb-1" />
       <div className="mesh-orb-2" />
+      <div className="mesh-orb-3" />
+      <div className="mesh-orb-4" />
+      <div className="hero-grain" />
       <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
         {/* Badge */}
         <div
@@ -1005,6 +1010,18 @@ function HeroSection() {
           33% { transform: translate(-25px, 15px) scale(1.05); }
           66% { transform: translate(15px, -25px) scale(1.1); }
         }
+        @keyframes meshFloat3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, 15px) scale(1.05); }
+          50% { transform: translate(35px, 25px) scale(1.08); }
+          75% { transform: translate(15px, 10px) scale(1.02); }
+        }
+        @keyframes meshFloat4 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(18px, -12px) scale(1.04); }
+          50% { transform: translate(30px, -28px) scale(1.07); }
+          75% { transform: translate(12px, -14px) scale(1.02); }
+        }
         .mesh-orb-1 {
           position: absolute;
           top: 20%;
@@ -1026,6 +1043,45 @@ function HeroSection() {
           border-radius: 50%;
           animation: meshFloat2 15s ease-in-out infinite;
           pointer-events: none;
+        }
+        .mesh-orb-3 {
+          position: absolute;
+          top: 60%;
+          left: 65%;
+          width: min(250px, 50vw);
+          height: min(250px, 50vw);
+          background: radial-gradient(circle, rgba(52,199,89,0.06) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: meshFloat3 15s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .mesh-orb-4 {
+          position: absolute;
+          top: 30%;
+          left: 5%;
+          width: min(300px, 60vw);
+          height: min(300px, 60vw);
+          background: radial-gradient(circle, rgba(255,149,0,0.04) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: meshFloat4 18s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .hero-grain {
+          position: absolute;
+          inset: 0;
+          opacity: 0.015;
+          pointer-events: none;
+          z-index: 1;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-repeat: repeat;
+          background-size: 200px 200px;
+          animation: grainShift 0.5s steps(1) infinite;
+        }
+        @keyframes grainShift {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(-1px, 1px); }
+          50% { transform: translate(1px, -1px); }
+          75% { transform: translate(-1px, -1px); }
         }
       `}</style>
     </section>
@@ -2299,6 +2355,9 @@ function PricingSection() {
    SECTION 8 — TESTIMONIALS
    ═══════════════════════════════════════════════════════════ */
 function TestimonialsSection() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
+
   const testimonials = [
     {
       text: 'MenuMate changed everything. We get 40+ orders daily through QR now. No more wrong orders!',
@@ -2322,6 +2381,39 @@ function TestimonialsSection() {
       color: '#34C759',
     },
   ]
+
+  const scrollToIndex = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, testimonials.length - 1))
+    setActiveIndex(clamped)
+    if (carouselRef.current) {
+      const cardWidth = carouselRef.current.scrollWidth / testimonials.length
+      carouselRef.current.scrollTo({ left: cardWidth * clamped, behavior: 'smooth' })
+    }
+  }, [testimonials.length])
+
+  // Sync scroll position back to active index (for touch/swipe)
+  useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const cardWidth = el.scrollWidth / testimonials.length
+        const idx = Math.round(el.scrollLeft / cardWidth)
+        if (idx !== activeIndex && idx >= 0 && idx < testimonials.length) {
+          setActiveIndex(idx)
+        }
+        ticking = false
+      })
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [activeIndex, testimonials.length])
+
+  const prev = () => scrollToIndex(activeIndex - 1)
+  const next = () => scrollToIndex(activeIndex + 1)
 
   return (
     <section style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(230,57,70,0.04), transparent 60%), radial-gradient(ellipse 60% 40% at 70% 50%, rgba(230,57,70,0.03) 0%, transparent 60%), ${T.bg}`, padding: '80px clamp(16px, 5vw, 40px)' }}>
@@ -2350,103 +2442,253 @@ function TestimonialsSection() {
           </div>
         </AnimatedSection>
 
-        <div
-          style={{
-            display: 'grid',
-            gap: 20,
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
-          }}
-        >
-          {testimonials.map((t, i) => (
-            <AnimatedSection key={i} delay={i * 120}>
-              <div
-                className="testimonial-card"
-                style={{
-                  background: T.surface,
-                  border: `1px solid ${T.cardBorder}`,
-                  borderRadius: 16,
-                  padding: 28,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  zIndex: 0,
-                  transition: 'transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.borderColor = 'rgba(230,57,70,0.3)'
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(230,57,70,0.08), 0 4px 16px rgba(0,0,0,0.2)'
-                  e.currentTarget.classList.add('testimonial-card-hover')
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.borderColor = T.cardBorder
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.classList.remove('testimonial-card-hover')
-                }}
-              >
-                <MessageCircle size={24} color={T.accent} style={{ opacity: 0.6 }} />
-                <p
+        {/* ── Mobile Carousel / Desktop Grid ── */}
+        <div style={{ position: 'relative' }}>
+          {/* Mobile nav arrows */}
+          <button
+            className="testimonial-arrow testimonial-arrow-left"
+            onClick={prev}
+            disabled={activeIndex === 0}
+            aria-label="Previous testimonial"
+            style={{
+              position: 'absolute',
+              left: 4,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 3,
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              border: 'none',
+              background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              color: '#FFFFFF',
+              cursor: activeIndex === 0 ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: activeIndex === 0 ? 0.3 : 0.8,
+              transition: 'opacity 200ms ease',
+            }}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            className="testimonial-arrow testimonial-arrow-right"
+            onClick={next}
+            disabled={activeIndex === testimonials.length - 1}
+            aria-label="Next testimonial"
+            style={{
+              position: 'absolute',
+              right: 4,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 3,
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              border: 'none',
+              background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              color: '#FFFFFF',
+              cursor: activeIndex === testimonials.length - 1 ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: activeIndex === testimonials.length - 1 ? 0.3 : 0.8,
+              transition: 'opacity 200ms ease',
+            }}
+          >
+            <ChevronRight size={18} />
+          </button>
+
+          {/* Cards container — carousel on mobile, grid on desktop */}
+          <div
+            ref={carouselRef}
+            className="testimonial-carousel"
+            style={{
+              display: 'flex',
+              gap: 20,
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+              padding: '4px 0',
+              /* hide scrollbar */
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            {testimonials.map((t, i) => (
+              <AnimatedSection key={i} delay={i * 120}>
+                <div
+                  className={`testimonial-card ${i === activeIndex ? 'testimonial-card-active' : ''}`}
                   style={{
-                    fontSize: 15,
-                    color: 'rgba(255,255,255,0.8)',
-                    fontStyle: 'italic',
-                    lineHeight: 1.7,
-                    marginTop: 16,
-                    flex: 1,
+                    background: T.surface,
+                    border: `1px solid ${T.cardBorder}`,
+                    borderRadius: 16,
+                    padding: 28,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    zIndex: 0,
+                    transition: 'transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease, opacity 300ms ease',
+                    /* mobile: full-width card for carousel */
+                    minWidth: 'calc(100% - 8px)',
+                    scrollSnapAlign: 'center',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.borderColor = 'rgba(230,57,70,0.3)'
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(230,57,70,0.08), 0 4px 16px rgba(0,0,0,0.2)'
+                    e.currentTarget.classList.add('testimonial-card-hover')
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.borderColor = T.cardBorder
+                    e.currentTarget.style.boxShadow = 'none'
+                    e.currentTarget.classList.remove('testimonial-card-hover')
                   }}
                 >
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div style={{ display: 'flex', gap: 2, marginTop: 16 }}>
-                  {[...Array(5)].map((_, si) => (
-                    <Star
-                      key={si}
-                      size={14}
-                      color={T.accent}
-                      fill={T.accent}
-                      className="testimonial-star"
-                      style={{
-                        opacity: 0,
-                        animation: `starFadeIn 0.4s ease forwards ${i * 0.15 + si * 0.08}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <div style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: '50%',
-                    background: `${t.color}20`,
-                    border: `1px solid ${t.color}40`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 12,
-                  }}>
-                    <span style={{
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: t.color,
-                    }}>
-                      {t.initials}
-                    </span>
+                  <MessageCircle size={24} color={T.accent} style={{ opacity: 0.6 }} />
+                  <p
+                    style={{
+                      fontSize: 15,
+                      color: 'rgba(255,255,255,0.8)',
+                      fontStyle: 'italic',
+                      lineHeight: 1.7,
+                      marginTop: 16,
+                      flex: 1,
+                    }}
+                  >
+                    &ldquo;{t.text}&rdquo;
+                  </p>
+                  <div style={{ display: 'flex', gap: 2, marginTop: 16 }}>
+                    {[...Array(5)].map((_, si) => (
+                      <Star
+                        key={si}
+                        size={14}
+                        color={T.accent}
+                        fill={T.accent}
+                        className="testimonial-star"
+                        style={{
+                          opacity: 0,
+                          animation: `starFadeIn 0.4s ease forwards ${i * 0.15 + si * 0.08}s`,
+                        }}
+                      />
+                    ))}
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: T.textPrimary }}>
-                    {t.name}
-                  </p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    {t.restaurant}
-                  </p>
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '50%',
+                      background: `${t.color}20`,
+                      border: `1px solid ${t.color}40`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 12,
+                    }}>
+                      <span style={{
+                        fontSize: 16,
+                        fontWeight: 700,
+                        color: t.color,
+                      }}>
+                        {t.initials}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: T.textPrimary }}>
+                      {t.name}
+                    </p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                      {t.restaurant}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </AnimatedSection>
-          ))}
+              </AnimatedSection>
+            ))}
+          </div>
+
+          {/* Mobile dot indicators */}
+          <div className="testimonial-dots" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => scrollToIndex(i)}
+                aria-label={`Go to testimonial ${i + 1}`}
+                className={`testimonial-dot ${i === activeIndex ? 'testimonial-dot-active' : ''}`}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: i === activeIndex ? 'var(--mm-accent, #E63946)' : 'var(--mm-text-muted, rgba(255,255,255,0.35))',
+                  transition: 'background 300ms ease, transform 300ms ease',
+                  padding: 0,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        /* Hide carousel scrollbar */
+        .testimonial-carousel::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Desktop: switch from flex carousel to grid */
+        @media (min-width: 768px) {
+          .testimonial-carousel {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            overflow-x: visible !important;
+            scroll-snap-type: none !important;
+          }
+          .testimonial-card {
+            min-width: unset !important;
+            scroll-snap-align: unset !important;
+            flex-shrink: unset !important;
+          }
+          /* Hide arrows & dots on desktop */
+          .testimonial-arrow {
+            display: none !important;
+          }
+          .testimonial-dots {
+            display: none !important;
+          }
+        }
+
+        /* Card fade-in on mobile when active */
+        @media (max-width: 767px) {
+          .testimonial-card {
+            opacity: 0.85;
+            transform: scale(0.96);
+            transition: opacity 300ms ease, transform 300ms ease;
+          }
+          .testimonial-card-active {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+          }
+        }
+
+        /* Dot pulse animation */
+        .testimonial-dot-active {
+          animation: dotPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.4); }
+        }
+      `}</style>
     </section>
   )
 }
