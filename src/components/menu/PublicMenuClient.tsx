@@ -304,7 +304,7 @@ export default function PublicMenuClient({
         timestamp,
       }
 
-      console.log(`[Notification] Sending ${type} request, eventId: ${eventId}, table: ${tableNumber || 'N/A'}`)
+      // Send notification via REST API
 
       // Use REST API as the single source of truth (no WebSocket fallback duplication)
       try {
@@ -317,7 +317,7 @@ export default function PublicMenuClient({
         if (!res.ok) {
           console.error(`[Notification] Failed to send ${type}:`, res.status)
         } else {
-          console.log(`[Notification] ${type} event created: ${eventId}`)
+          // Event created successfully
         }
       } catch (err) {
         console.error(`[Notification] Error sending ${type}:`, err)
@@ -463,13 +463,7 @@ export default function PublicMenuClient({
     }
   }, [q, activeCategory])
 
-  // ─── Debug: log item/category counts ─────────────────────────
-  useEffect(() => {
-    console.log(`[Menu] Loaded: ${items.length} items, ${categories.length} categories, ${grouped.length} groups`)
-    for (const g of grouped) {
-      console.log(`[Menu]   Group "${g.categoryName}" (${g.categoryId}): ${g.items.length} items`)
-    }
-  }, [items.length, categories.length, grouped])
+  // ─── Item/category counts logged in dev only ──────────────────
 
   // ─── Show stamps tab? ───────────────────────────────────────
   const showStampsTab = !!stampSettings

@@ -437,7 +437,7 @@ export default function SettingsPage() {
   }, [fetchTables, fetchStampSettings])
 
   useEffect(() => {
-    console.log('[Settings] data loaded, whatsapp:', data?.restaurant?.whatsapp_number, 'theme:', data?.restaurant?.theme, 'restaurantId:', data?.restaurant?.id)
+    // Sync local state from loaded data
     if (data?.restaurant?.whatsapp_number) {
       setWhatsappNumber(data.restaurant.whatsapp_number)
     } else if (data?.restaurant) {
@@ -457,7 +457,6 @@ export default function SettingsPage() {
       return
     }
     setWhatsappSaving(true)
-    console.log('[Settings] Saving WhatsApp number:', clean)
     try {
       const res = await fetch('/api/restaurant', {
         method: 'PATCH',
@@ -470,12 +469,10 @@ export default function SettingsPage() {
         throw new Error(err.error || 'Failed to save')
       }
       const result = await res.json()
-      console.log('[Settings] WhatsApp save response:', result)
 
       // Immediately update local state from the PATCH response
       if (result.restaurant?.whatsapp_number !== undefined) {
         setWhatsappNumber(result.restaurant.whatsapp_number)
-        console.log('[Settings] WhatsApp number confirmed saved:', result.restaurant.whatsapp_number)
       }
 
       toast.success('WhatsApp number updated!')

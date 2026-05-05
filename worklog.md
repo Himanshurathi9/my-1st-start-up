@@ -940,3 +940,58 @@ Stage Summary:
 4. **Add order notifications** — Real-time toast notifications for new orders
 5. **Performance optimization** — Image lazy loading, code splitting, font optimization
 6. **Accessibility audit** — Full ARIA labels, keyboard navigation, screen reader testing
+
+---
+Task ID: 14
+Agent: Main Agent
+Task: Codebase review, engineering improvements, and stabilization
+
+Work Log:
+- **Reviewed entire codebase** — assessed env.ts, next.config.ts, all API routes, all components, CSS files, and config
+- **FIX: Removed hardcoded secrets from env.ts** — Replaced all hardcoded Supabase/Cloudinary/NextAuth credential fallbacks with `requiredEnv()` and `optionalEnv()` helper functions that read from environment variables only. Secrets now live exclusively in `.env` file (not in source code).
+- **FIX: Updated .env file** — Moved all credentials from hardcoded env.ts fallbacks to `.env` file with proper comments and sections.
+- **FIX: Added .env.example** — Created `.env.example` with placeholder values and comments for all required environment variables. This serves as documentation for new developers.
+- **FIX: Cleaned up debug console.logs** — Removed 4 debug console.log statements from settings page (data loaded, WhatsApp saving, response logging, confirmed saved) and 4 from PublicMenuClient (notification sending, event created, menu group debug log). Kept console.error in API routes (important for server debugging).
+- **FIX: Tables page placeholder** — Changed from returning null to redirecting to `/dashboard/settings#qr-codes` since QR code management lives in the Settings page.
+- **FIX: next.config.ts** — Added TODO comments for `ignoreBuildErrors` and `reactStrictMode` explaining why they're still disabled and what needs to happen before enabling them.
+- **Verified**: Lint passes with zero errors, dev server compiles and serves landing page (200 OK), all env vars properly loaded from .env file.
+- **Created webDevReview cron job** (ID: 130875) — Scheduled every 15 minutes for continuous development and QA.
+
+Files Modified:
+- `src/lib/env.ts` — Removed all hardcoded credential fallbacks, added `requiredEnv()` and `optionalEnv()` helpers
+- `.env` — Added all credential values (moved from env.ts)
+- `.env.example` — Created with placeholder values and documentation
+- `src/app/(dashboard)/dashboard/settings/page.tsx` — Removed 4 debug console.log statements
+- `src/components/menu/PublicMenuClient.tsx` — Removed 4 debug console.log statements
+- `src/app/(dashboard)/dashboard/tables/page.tsx` — Changed from null to redirect to settings
+- `next.config.ts` — Added TODO comments for strict mode settings
+
+Stage Summary:
+- **Security improvement**: No credentials in source code anymore — all in .env
+- **Engineering hygiene**: Debug logging removed from production frontend code
+- **UX fix**: Tables page now redirects instead of showing blank page
+- **Documentation**: .env.example provides clear setup instructions
+- **Automation**: Cron job ensures continuous development and QA
+- Zero lint errors, clean compilation
+
+### Current Project Status:
+- ✅ All 14 landing page sections functional with rich interactions
+- ✅ Login page polished with animations and enhancements
+- ✅ All interaction/scroll bugs fixed
+- ✅ Mobile responsive (320px-480px)
+- ✅ Zero lint errors
+- ✅ No hardcoded secrets in source code
+- ✅ Debug logging cleaned up
+- ✅ Tables page redirects to settings
+- ⚠️ Dev server instability (auto-restart wrapper mitigates)
+- ⚠️ `ignoreBuildErrors: true` and `reactStrictMode: false` in next.config.ts (documented with TODOs)
+- ⚠️ Prisma schema is stale (app uses Supabase directly)
+- ⚠️ Dashboard/Admin pages not QA-tested (require authentication)
+
+### 📋 Priority for Next Phase
+1. QA test dashboard/admin pages via agent-browser
+2. Fix TypeScript errors incrementally to enable `ignoreBuildErrors: false`
+3. Test and enable `reactStrictMode: true`
+4. Add more interactive features (dashboard stats animation, order notifications)
+5. Performance optimization (lazy loading, code splitting)
+6. Accessibility improvements (ARIA labels, keyboard navigation)

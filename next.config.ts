@@ -12,9 +12,9 @@ const nextConfig: NextConfig = {
     ],
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true, // TODO: Fix TS errors incrementally before enabling
   },
-  reactStrictMode: false,
+  reactStrictMode: false, // TODO: Enable after verifying no double-render issues
 };
 
 export default nextConfig;
