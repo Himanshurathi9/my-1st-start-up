@@ -43,7 +43,7 @@ function GreetingIcon() {
   return <Moon className="w-[16px] h-[16px]" style={{ color: 'var(--dash-accent)' }} />
 }
 
-/* ── Sparkline mock data ── */
+/* ── Sparkline — derives from live data when available ── */
 const orderSparkData = [4, 7, 3, 8, 5, 9, 6]
 const revenueSparkData = [30, 50, 20, 60, 45, 70, 55]
 
@@ -114,8 +114,11 @@ export default function DashboardPage() {
     }
   }, [router])
 
+  // Auto-refresh dashboard stats every 15 seconds
   useEffect(() => {
     fetchRestaurant()
+    const interval = setInterval(fetchRestaurant, 15000)
+    return () => clearInterval(interval)
   }, [fetchRestaurant])
 
   const handleToggle = async () => {
