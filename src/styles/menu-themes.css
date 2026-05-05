@@ -42,6 +42,7 @@
   --m-warning: #FF9F0A;
   --m-veg: #30D158;
   --m-nonveg: #FF453A;
+  --m-scrollbar-thumb: rgba(255,255,255,0.15);
   --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
   --m-shadow: 0 2px 8px rgba(0,0,0,0.30);
   --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.40);
@@ -103,6 +104,7 @@
   --m-warning: #EF8F00;
   --m-veg: #30B050;
   --m-nonveg: #E53935;
+  --m-scrollbar-thumb: rgba(0,0,0,0.15);
   --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
   --m-shadow: 0 2px 8px rgba(0,0,0,0.06);
   --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
@@ -164,6 +166,7 @@
   --m-warning: #FBBF24;
   --m-veg: #34D399;
   --m-nonveg: #FB7185;
+  --m-scrollbar-thumb: rgba(255,255,255,0.15);
   --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.28);
   --m-shadow: 0 2px 8px rgba(0,0,0,0.30);
   --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.40);
@@ -225,6 +228,7 @@
   --m-warning: #FBBF24;
   --m-veg: #7ED957;
   --m-nonveg: #FB7185;
+  --m-scrollbar-thumb: rgba(255,255,255,0.15);
   --m-shadow-sm: 0 1px 2px rgba(0,0,0,0.28);
   --m-shadow: 0 2px 8px rgba(0,0,0,0.32);
   --m-shadow-lg: 0 8px 24px rgba(0,0,0,0.42);
@@ -1349,6 +1353,116 @@
   .menu-search-input {
     font-size: 13px;
   }
+}
+
+/* ─── WhatsApp Floating Button ─────────────────────────────── */
+.wa-fab {
+  position: fixed;
+  z-index: 39;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #25D366;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ box-shadow: 0 3px 12px rgba(37, 211, 102, 0.40);
+ transition: transform 150ms ease, box-shadow 200ms ease;
+ padding: 0;
+}
+.wa-fab:active {
+  transform: scale(0.90);
+}
+@media (hover: hover) {
+  .wa-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.50);
+  }
+}
+.wa-fab-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.25);
+  animation: wa-pulse-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes wa-pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  70% { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+.wa-fab-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--m-card);
+  color: var(--m-text);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: var(--m-shadow);
+  border: 1px solid var(--m-card-border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+@media (hover: hover) {
+  .wa-fab:hover .wa-fab-tooltip {
+    opacity: 1;
+  }
+}
+
+/* ─── Food Type Filter Chips ────────────────────────────────── */
+.food-type-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.food-type-chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--m-card-border);
+  background: transparent;
+  color: var(--m-text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+.food-type-chip:active {
+  transform: scale(0.95);
+}
+.food-type-chip--active {
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  border-color: var(--m-primary);
+  box-shadow: 0 2px 8px var(--m-primary-glow);
+}
+.food-type-chip--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* ─── Desktop responsive overrides ──────────────────────────── */

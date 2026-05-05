@@ -493,3 +493,201 @@ Stage Summary:
 - Landing page confirmed working (200 OK, dark theme)
 - All previous features intact (14 landing page sections, dashboard, admin, public menu, etc.)
 - Cron job scheduled for continuous review and development
+
+---
+
+Task ID: 11
+Agent: Styling & Features Agent
+Task: Enhance login page with loading spinner, password strength, remember me, improved errors, social proof
+
+Work Log:
+- Read existing login page (`src/app/(auth)/login/page.tsx`) and `globals.css` to understand current code style and structure
+- Added `useEffect`, `useCallback` to React imports; added `X`, `Star`, `ShieldCheck` to lucide-react imports
+- Added `getPasswordStrength()` utility function that evaluates password against 5 criteria (length >= 6, length >= 10, uppercase, numbers, special chars) and returns score (0-3), label (Weak/Fair/Strong), color, and bgColor
+- **Enhancement 1 — Loading spinner**: Button already had `Loader2` spinner with `disabled={loading}`; added `opacity: 0.8` during loading for visual feedback, added `if (loading) return` guard at top of `handleSubmit` to prevent double-submission, created custom `login-spinner-icon` CSS animation (0.8s linear infinite) to replace Tailwind's `animate-spin` for consistency
+- **Enhancement 2 — Password strength indicator**: Added visual meter below password field (3-segment colored bar: red=Weak, orange=Fair, green=Strong) with text label and character count hint; appears with fade-in animation (`login-pw-strength-enter`) when password has content; transitions smoothly as user types
+- **Enhancement 3 — Remember me checkbox**: Added `rememberMe` state; on mount, reads saved email from `localStorage('menumate-remember-email')` and pre-fills email field; custom-styled checkbox with accent-colored fill and SVG checkmark, hover glow effect (`box-shadow: 0 0 0 3px rgba(230,57,70,0.12)`), and press scale (`scale(0.92)`); on submit, saves email to localStorage if checked, removes if unchecked
+- **Enhancement 4 — Error message display**: Replaced simple error div with enhanced version featuring: left accent border (3px red bar), `AlertCircle` icon, dismiss button with `X` icon, smooth slide-in animation (`login-error-slide-in` keyframe with scaleY, translateY, and opacity), shake animation after slide-in completes (0.3s delay via combined animation), dismiss button with hover background and opacity transition; added `errorVisible` and `errorDismissed` states for animation control; added `dismissError` callback that triggers slide-out and clears error after 300ms
+- **Enhancement 5 — Social proof**: Added section below divider with 5 filled `Star` icons (orange, 16px each) and "Trusted by 50+ restaurants across India" text with `ShieldCheck` icon; fade-in animation with 0.7s delay via `login-social-fade` keyframe
+- All CSS animations added to existing `<style jsx global>` block
+- Lint passes with zero errors; dev server compiles successfully
+
+Stage Summary:
+- All 5 login page enhancements implemented
+- Password strength meter shows weak/fair/strong with color-coded 3-segment bar
+- Remember me persists email to localStorage across sessions
+- Error display has slide-in animation, accent left border, icon, and dismiss button
+- Social proof section with stars and shield icon adds trust below the form
+- No API routes or backend logic changed
+- Overall layout structure preserved (left panel hidden on mobile, right panel form)
+- Code style consistent with existing inline styles approach
+
+---
+Task ID: 12
+Agent: Feature Enhancement Agent
+Task: Enhance landing page inquiry form with validation, animations, and mini steps
+
+Work Log:
+- Added `Phone` and `Rocket` to lucide-react imports
+- Replaced the entire `InquiryForm` component with an enhanced version featuring:
+  - **Form validation with visual feedback**: Added `touched` state tracking per field; real-time validation on Restaurant Name (required), Owner Name (required), and Phone (exactly 10 digits); red border + red box-shadow ring for error states; green border + green box-shadow ring for valid states; error text with X icon displayed below invalid fields
+  - **Phone character counter**: Shows "X/10 digits" below the phone input, colored green when valid (10 digits), red when over 10 digits, and muted when in-progress; phone input only allows digits and spaces
+  - **Form submission animation**: On valid submit, button changes from WhatsApp green to success green with a Check icon and "Sending to WhatsApp..." text; `inquirySuccessPop` CSS keyframe provides a pop-in scale animation (0.5→1.15→1); after 1.5s delay, the actual WhatsApp link opens
+  - **"How it works" mini steps section**: Added 3 step cards above the form: "Fill this form" (ClipboardList icon, accent color), "We'll call you in 24hrs" (Phone icon, green color), "Go live with your menu" (Rocket icon, WhatsApp green color); each step has a colored icon container with subtle description text; wrapped in AnimatedSection with 80ms delay
+  - **Plan selector button animation**: Active plan button gets accent border (2px), scale(1.02) transform, and accent box-shadow glow; `planBtnBounce` CSS keyframe plays on selection (scale 1→1.06→0.98→1.02); smooth CSS transitions on background, color, border-color, transform, and box-shadow (200-300ms)
+  - **Updated `isFormValid`**: Now requires phone to be exactly 10 digits (stripped of spaces) and name fields to be non-empty after trim
+- Added CSS animations to `<style jsx global>` block: `planBtnBounce` and `inquirySuccessPop` keyframes
+- WhatsApp message generation and link opening logic preserved unchanged
+
+Lint Results:
+- Zero errors (lint passes clean)
+- Dev server compiles successfully (GET / 200, compile: 1322ms)
+
+Stage Summary:
+- All 5 requested enhancements implemented in the InquiryForm section
+- No other sections of the page modified
+- Code style matches existing inline styles pattern with T design tokens
+- Form validation is real-time with touch-aware error display (no errors before user interacts)
+- Phone field validates digit count and strips non-digit characters
+- Submission shows a polished checkmark animation before opening WhatsApp
+- Mini steps section provides clear onboarding flow above the form
+
+---
+Task ID: 13
+Agent: Feature Agent
+Task: Add WhatsApp FAB and food type filters to public menu
+
+Work Log:
+- Added CSS styles to `src/styles/menu-themes.css`:
+  - `.wa-fab` — fixed-position floating WhatsApp button (52x52px, green circle, bottom-left, above service bar)
+  - `.wa-fab-pulse::before` — pulse ring animation (`wa-pulse-ring` keyframe, 2s ease-out infinite)
+  - `.wa-fab-tooltip` — "Chat with us" tooltip, visible on hover (desktop only via `@media (hover: hover)`)
+  - `.food-type-chips` — horizontal scrollable container for food type filter chips
+  - `.food-type-chip` — ghost-style chip button (32px height, rounded border, theme-aware)
+  - `.food-type-chip--active` — active state with primary background, glow shadow
+  - `.food-type-chip--dot` — 8px colored dot for veg/non-veg indicators
+- Modified `src/components/menu/PublicMenuClient.tsx`:
+  - Added `foodTypeFilter` state (`'all' | 'VEG' | 'NONVEG'`, default `'all'`)
+  - Added `hasMixedFoodTypes` memoized check — only shows chips when menu has BOTH VEG and NONVEG items
+  - Updated `filtered` memo to apply food type filter BEFORE search and category filters (all three work simultaneously)
+  - Added food type filter chips UI between category bar (section 2) and content grid (section 3) — three chips: 🍽 All, 🟢 Veg, 🔴 Non-Veg
+  - Added WhatsApp FAB (section 8) — `<a>` tag with inline WhatsApp SVG icon, opens `https://wa.me/${restaurant.whatsapp_number}` in new tab, only renders when `restaurant.whatsapp_number` exists and menu tab is active
+
+Lint Results:
+- Zero errors (lint passes clean)
+- Dev server compiles successfully (GET / 200, compile: 1322ms)
+
+Stage Summary:
+- WhatsApp FAB: 52x52px green circle, bottom-left corner, pulse animation, hover tooltip, safe-area-aware positioning, only shown when WhatsApp number configured
+- Food type filter chips: 3 chips (All/Veg/Non-Veg), conditional display (only when menu has mixed food types), works alongside existing category filter and search
+- All existing functionality preserved (category pills, search, cart, service bar, theme switcher, stamps tab)
+- Theme-aware: chips and tooltip use `var(--m-*)` CSS variables
+
+---
+Task ID: 14
+Agent: CSS Polish Agent
+Task: Add global CSS polish — scrollbars, focus styles, selection, utility animations
+
+Work Log:
+- Added `--mm-scrollbar-thumb` and `--mm-scrollbar-thumb-hover` CSS variables to dark theme `:root` section in globals.css (dark: `rgba(255,255,255,0.15)` / `rgba(255,255,255,0.25)`, light: `rgba(0,0,0,0.15)` / `rgba(0,0,0,0.25)`)
+- Updated existing scrollbar styles in `@layer base` to use CSS variables instead of hardcoded values, added `transition: background 0.2s ease, width 0.2s ease` for smooth hover, added `width: 8px` on hover for wider thumb effect
+- Updated `.light-mode` scrollbar overrides to use CSS variables with fallbacks
+- Added `*:focus-visible` styles for keyboard accessibility: 2px solid accent outline with 2px offset and 4px border-radius
+- Added `transition: outline-color 0.15s ease` on interactive elements (button, a, input, select, textarea)
+- Selection colors were already properly themed from previous tasks (dark: `rgba(230,57,70,0.3)` white, light: `rgba(230,57,70,0.2)` #1A1A1A)
+- Added 4 global utility animation keyframes and classes: `fadeInUp` (`.animate-fade-in-up`), `mmScaleIn` (`.animate-mm-scale-in`), `mmSlideInRight` (`.animate-mm-slide-in-right`), `mmShimmer` (`.animate-mm-shimmer`)
+- Added `--m-scrollbar-thumb` CSS variable to all 4 menu themes in menu-themes.css (dark/light/green/gold)
+- `--m-veg` and `--m-nonveg` already existed in all 4 themes — no changes needed
+
+Lint Results:
+- Zero errors (lint passes clean)
+- Dev server compiles successfully (GET / 200, compile: 1109ms)
+
+Stage Summary:
+- Custom scrollbar theming via CSS variables for both dark and light modes
+- Scrollbar thumb widens to 8px on hover with smooth transition
+- Focus-visible outlines use accent color for keyboard accessibility
+- Interactive elements have smooth outline-color transitions
+- 4 reusable animation classes available globally (fadeInUp, scaleIn, slideInRight, shimmer)
+- Menu theme scrollbar variables added to all 4 themes (dark, light, green, gold)
+- All existing styles preserved — no breaking changes
+
+---
+
+## Phase 7 Summary — Cron Review Round (Tasks 11-14)
+
+### Current Project Status Assessment
+
+**Overall Health: ✅ STABLE**
+- All public pages compile and serve with 200 OK
+- Zero lint errors across the entire codebase
+- All interaction/scroll bugs from previous phases remain fixed
+- No compilation errors or build failures
+
+### QA Testing Results
+| Page | Status | Details |
+|------|--------|---------|
+| `/` (Landing) | ✅ 200 OK | 16+ sections, all interactive elements working, dark/light toggle, cookie consent |
+| `/login` | ✅ 200 OK | Auth form with enhanced validation, password strength, remember me, social proof |
+| `/menu/brew-house-demo` | ✅ 200 OK | Banners, categories, menu items, search, cart, WhatsApp FAB, food type filters |
+| `/menu/brew-house-demo/track/test-order` | ✅ 200 OK | Order tracking page compiles |
+
+### Completed This Round
+
+#### Styling Enhancements
+1. **Login page** (Task 11):
+   - Loading spinner with double-submit guard
+   - Password strength indicator (3-segment bar: weak/fair/strong)
+   - Remember me checkbox with localStorage persistence
+   - Enhanced error display with slide-in animation and dismiss button
+   - Social proof section with star ratings and ShieldCheck icon
+
+2. **Landing page inquiry form** (Task 12):
+   - Real-time form validation with touch-aware error display
+   - Phone character counter (X/10 digits, color-coded)
+   - Form submission animation (checkmark pop-in before WhatsApp redirect)
+   - "How it works" mini steps section (3 cards with icons)
+   - Plan selector bounce animation on selection
+
+3. **Global CSS polish** (Task 14):
+   - Custom scrollbar styling (thin, theme-aware, widens on hover)
+   - Focus-visible styles for keyboard accessibility
+   - 4 reusable animation utility classes (fadeInUp, scaleIn, slideInRight, shimmer)
+   - Menu theme scrollbar variables across all 4 themes
+
+#### New Features
+4. **WhatsApp Floating Action Button** (Task 13):
+   - 52x52px green circle, bottom-left of public menu page
+   - Pulse animation to draw attention
+   - Hover tooltip "Chat with us" (desktop only)
+   - Safe-area-aware positioning above service bar
+   - Only shown when restaurant has WhatsApp number configured
+
+5. **Food Type Filter Chips** (Task 13):
+   - 3 chips: All / Veg (green) / Non-Veg (red)
+   - Conditional display (only when menu has BOTH veg and non-veg items)
+   - Works alongside existing category filter and search
+   - Theme-aware styling using CSS variables
+
+### Files Modified This Round
+- `src/app/(auth)/login/page.tsx` — 5 enhancements
+- `src/app/page.tsx` — Inquiry form overhaul
+- `src/components/menu/PublicMenuClient.tsx` — WhatsApp FAB + food type filters
+- `src/styles/menu-themes.css` — New CSS classes for FAB, chips, scrollbar vars
+- `src/app/globals.css` — Scrollbar styles, focus-visible, utility animations
+
+### ⚠️ Known Issues (Unchanged)
+1. Dev server instability in sandbox environment (auto-restart wrapper mitigates)
+2. Hardcoded secrets in env.ts (pre-existing, not addressed)
+3. Dashboard/Admin pages not QA-tested via browser (require authentication)
+4. Prisma schema is stale (app uses Supabase directly)
+5. Tables page returns null (placeholder)
+6. Dashboard sparklines use hardcoded mock data
+
+### 📋 Recommended Priority for Next Phase
+1. **QA dashboard/admin pages** — Set up authenticated browser session for testing
+2. **Implement real dashboard data** — Replace mock sparklines with actual data from Supabase
+3. **Activate Tables page** — Implement QR code generation and table management
+4. **Performance optimization** — Lazy loading for below-fold content, code splitting
+5. **Accessibility audit** — ARIA labels, keyboard navigation, screen reader testing
+6. **Security hardening** — Move secrets to environment variables, enable TypeScript strict mode

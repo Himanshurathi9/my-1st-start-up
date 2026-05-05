@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, Loader2, X, Star, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { env } from '@/lib/env'
 
@@ -16,19 +16,82 @@ const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
   delay: Math.random() * 12,
 }))
 
+/* ── Password strength calculator ── */
+function getPasswordStrength(pw: string): { score: number; label: string; color: string; bgColor: string } {
+  if (!pw) return { score: 0, label: '', color: '#E5E5EA', bgColor: '#E5E5EA' }
+  let score = 0
+  if (pw.length >= 6) score++
+  if (pw.length >= 10) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^A-Za-z0-9]/.test(pw)) score++
+
+  if (score <= 2) return { score: 1, label: 'Weak', color: '#FF3B30', bgColor: '#FFF5F5' }
+  if (score <= 3) return { score: 2, label: 'Fair', color: '#FF9500', bgColor: '#FFF8F0' }
+  return { score: 3, label: 'Strong', color: '#34C759', bgColor: '#F0FFF5' }
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [errorVisible, setErrorVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null)
+  const [rememberMe, setRememberMe] = useState(false)
+  const [errorDismissed, setErrorDismissed] = useState(false)
+
+  /* ── Load remembered email on mount ── */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('menumate-remember-email')
+      if (saved) {
+        setEmail(saved)
+        setRememberMe(true)
+      }
+    } catch {
+      // localStorage not available
+    }
+  }, [])
+
+  /* ── Sync error visibility with error state ── */
+  useEffect(() => {
+    if (error) {
+      setErrorDismissed(false)
+      setErrorVisible(true)
+    }
+  }, [error])
+
+  const dismissError = useCallback(() => {
+    setErrorDismissed(true)
+    setErrorVisible(false)
+    // Clear actual error after animation completes
+    setTimeout(() => {
+      setError('')
+      setErrorDismissed(false)
+    }, 300)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return // Prevent double-submission
     setError('')
+    setErrorVisible(false)
+    setErrorDismissed(false)
     setLoading(true)
+
+    /* Persist / clear remembered email */
+    try {
+      if (rememberMe) {
+        localStorage.setItem('menumate-remember-email', email)
+      } else {
+        localStorage.removeItem('menumate-remember-email')
+      }
+    } catch {
+      // localStorage not available
+    }
 
     try {
       const result = await signIn('credentials', {
@@ -57,6 +120,9 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
+
+  /* ── Password strength ── */
+  const pwStrength = getPasswordStrength(password)
 
   /* ── Shared styles ── */
   const inputStyle: React.CSSProperties = {
@@ -376,29 +442,169 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+
+              {/* ── Password strength indicator ── */}
+              {password.length > 0 && (
+                <div
+                  className="login-pw-strength-enter"
+                  style={{ marginTop: 8 }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 4,
+                      height: 4,
+                    }}
+                  >
+                    {[1, 2, 3].map((level) => (
+                      <div
+                        key={level}
+                        style={{
+                          flex: 1,
+                          height: 4,
+                          borderRadius: 100,
+                          background: pwStrength.score >= level ? pwStrength.color : '#E5E5EA',
+                          transition: 'background 300ms ease',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: 4,
+                    }}
+                  >
+                    <span style={{ fontSize: 11, fontWeight: 600, color: pwStrength.color, transition: 'color 300ms ease' }}>
+                      {pwStrength.label}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#AEAEB2' }}>
+                      {password.length}/8+ chars
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Error */}
-            {error && (
+            {/* Remember me row */}
+            <div
+              style={{
+                marginTop: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <label
+                htmlFor="remember-me"
+                className="login-remember-label"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                <div
+                  className="login-remember-checkbox"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 5,
+                    border: rememberMe ? 'none' : '1.5px solid #C7C7CC',
+                    background: rememberMe ? '#E63946' : '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 200ms ease, border-color 200ms ease, transform 150ms ease',
+                    transform: rememberMe ? 'scale(1)' : 'scale(1)',
+                    flexShrink: 0,
+                  }}
+                >
+                  {rememberMe && (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginLeft: 0 }}>
+                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ display: 'none' }}
+                />
+                <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>Remember me</span>
+              </label>
+            </div>
+
+            {/* Error — enhanced with slide-in animation and dismiss */}
+            {error && !errorDismissed && (
               <div
-                className="login-shake"
+                className={`login-error-enter ${errorVisible ? 'login-error-visible' : ''}`}
                 style={{
                   marginTop: 12,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 10,
                   background: '#FFF5F5',
-                  border: '1px solid rgba(255,59,48,0.2)',
-                  borderRadius: 10,
-                  padding: '10px 14px',
+                  border: '1px solid rgba(255,59,48,0.15)',
+                  borderRadius: 12,
+                  padding: '12px 14px',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
               >
-                <AlertCircle style={{ width: 16, height: 16, color: '#FF3B30', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#FF3B30' }}>{error}</span>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: 3,
+                    height: '100%',
+                    background: '#FF3B30',
+                    borderRadius: '0 4px 4px 0',
+                  }}
+                />
+                <AlertCircle style={{ width: 18, height: 18, color: '#FF3B30', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#FF3B30', flex: 1, lineHeight: 1.4 }}>{error}</span>
+                <button
+                  type="button"
+                  onClick={dismissError}
+                  aria-label="Dismiss error"
+                  className="login-error-dismiss"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 6,
+                    color: '#FF3B30',
+                    opacity: 0.6,
+                    transition: 'opacity 200ms ease, background 200ms ease',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1'
+                    e.currentTarget.style.background = 'rgba(255,59,48,0.08)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.6'
+                    e.currentTarget.style.background = 'none'
+                  }}
+                >
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
               </div>
             )}
 
-            {/* Sign In Button */}
+            {/* Sign In Button — enhanced loading state */}
             <button
               type="submit"
               disabled={loading}
@@ -418,10 +624,11 @@ export default function LoginPage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                transition: 'background 200ms ease, transform 200ms ease',
+                transition: 'background 200ms ease, transform 200ms ease, opacity 200ms ease',
                 transform: 'scale(1)',
                 position: 'relative',
                 overflow: 'hidden',
+                opacity: loading ? 0.8 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
@@ -446,7 +653,7 @@ export default function LoginPage() {
               {!loading && <span className="login-btn-shimmer" />}
               {loading ? (
                 <>
-                  <Loader2 style={{ width: 18, height: 18 }} className="animate-spin" />
+                  <Loader2 style={{ width: 18, height: 18 }} className="login-spinner-icon" />
                   Signing in...
                 </>
               ) : (
@@ -503,6 +710,46 @@ export default function LoginPage() {
               >
                 Get started on WhatsApp →
               </Link>
+            </div>
+
+            {/* ── Social proof ── */}
+            <div
+              className="login-social-proof"
+              style={{
+                marginTop: 32,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              {/* Stars */}
+              <div style={{ display: 'flex', gap: 2 }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      fill: '#FF9500',
+                      color: '#FF9500',
+                    }}
+                  />
+                ))}
+              </div>
+              {/* Text */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <ShieldCheck style={{ width: 14, height: 14, color: '#AEAEB2' }} />
+                <span style={{ fontSize: 12, color: '#AEAEB2', fontWeight: 500 }}>
+                  Trusted by 50+ restaurants across India
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -569,8 +816,89 @@ export default function LoginPage() {
           75% { transform: translateX(-1px); }
         }
 
-        .login-shake {
-          animation: login-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        /* ── Error slide-in animation ── */
+        @keyframes login-error-slide-in {
+          0% {
+            opacity: 0;
+            transform: translateY(-8px) scaleY(0.95);
+            max-height: 0;
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+          60% {
+            transform: translateY(0) scaleY(1);
+            max-height: 80px;
+            margin-top: 12px;
+          }
+          80% {
+            opacity: 1;
+            transform: translateX(-4px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+            max-height: 80px;
+            margin-top: 12px;
+          }
+        }
+
+        .login-error-enter {
+          animation: login-error-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .login-error-visible.login-error-enter {
+          animation: login-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.3s both,
+                       login-error-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .login-error-dismiss {
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ── Password strength enter ── */
+        @keyframes login-pw-strength-enter {
+          from {
+            opacity: 0;
+            transform: translateY(-4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .login-pw-strength-enter {
+          animation: login-pw-strength-enter 0.25s ease-out both;
+        }
+
+        /* ── Remember me checkbox animation ── */
+        .login-remember-checkbox {
+          transition: background 200ms ease, border-color 200ms ease, transform 150ms ease, box-shadow 200ms ease;
+        }
+
+        .login-remember-label:hover .login-remember-checkbox {
+          box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
+        }
+
+        .login-remember-label:active .login-remember-checkbox {
+          transform: scale(0.92);
+        }
+
+        /* ── Social proof animation ── */
+        @keyframes login-social-fade {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .login-social-proof {
+          animation: login-social-fade 0.5s ease-out 0.7s both;
         }
 
         /* ── Submit button shimmer ── */
@@ -605,6 +933,16 @@ export default function LoginPage() {
           );
           transform: translateX(-100%);
           pointer-events: none;
+        }
+
+        /* ── Loading spinner smooth spin ── */
+        @keyframes login-spinner-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .login-spinner-icon {
+          animation: login-spinner-spin 0.8s linear infinite;
         }
 
         /* ── Eye toggle smooth transition ── */

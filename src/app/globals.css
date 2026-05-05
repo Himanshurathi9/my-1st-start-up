@@ -149,6 +149,8 @@
   --mm-problem-border: rgba(255,59,48,0.15);
   --mm-solution-bg: rgba(52,199,89,0.05);
   --mm-solution-border: rgba(52,199,89,0.15);
+  --mm-scrollbar-thumb: rgba(255,255,255,0.15);
+  --mm-scrollbar-thumb-hover: rgba(255,255,255,0.25);
 }
 
 /* ── Light mode overrides ── */
@@ -187,6 +189,8 @@
   --mm-problem-border: rgba(255,59,48,0.2);
   --mm-solution-bg: rgba(52,199,89,0.06);
   --mm-solution-border: rgba(52,199,89,0.2);
+  --mm-scrollbar-thumb: rgba(0,0,0,0.15);
+  --mm-scrollbar-thumb-hover: rgba(0,0,0,0.25);
 }
 
 .light-mode ::selection {
@@ -195,13 +199,14 @@
 }
 
 .light-mode ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--mm-scrollbar-thumb, rgba(0, 0, 0, 0.15));
 }
 .light-mode ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--mm-scrollbar-thumb-hover, rgba(0, 0, 0, 0.25));
+  width: 8px;
 }
 .light-mode :root {
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  scrollbar-color: var(--mm-scrollbar-thumb, rgba(0, 0, 0, 0.15)) transparent;
 }
 
 /* ── Typewriter cursor ── */
@@ -226,6 +231,17 @@
 }
 .cookie-consent-enter {
   animation: cookieSlideUp 0.4s ease-out forwards;
+}
+
+/* ── Focus-visible styles (keyboard accessibility) ── */
+*:focus-visible {
+  outline: 2px solid var(--mm-accent, #E63946);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button, a, input, select, textarea {
+  transition: outline-color 0.15s ease;
 }
 
 /* ── Critical scroll/interaction rules (OUTSIDE @layer for highest specificity) ── */
@@ -279,14 +295,56 @@ body {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--mm-scrollbar-thumb, rgba(255, 255, 255, 0.15));
     border-radius: 100px;
+    transition: background 0.2s ease, width 0.2s ease;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--mm-scrollbar-thumb-hover, rgba(255, 255, 255, 0.25));
+    width: 8px;
   }
   :root {
-    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    scrollbar-color: var(--mm-scrollbar-thumb, rgba(255, 255, 255, 0.15)) transparent;
     scrollbar-width: thin;
   }
+}
+
+/* ── Global Utility Animations ── */
+
+/* Fade in up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Scale in */
+@keyframes mmScaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-mm-scale-in {
+  animation: mmScaleIn 0.3s ease forwards;
+}
+
+/* Slide in from right */
+@keyframes mmSlideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-mm-slide-in-right {
+  animation: mmSlideInRight 0.4s ease forwards;
+}
+
+/* Shimmer loading effect */
+@keyframes mmShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-mm-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background-size: 200% 100%;
+  animation: mmShimmer 1.5s infinite;
 }

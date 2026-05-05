@@ -24,6 +24,8 @@ import {
   Sun,
   Moon,
   Cookie,
+  Phone,
+  Rocket,
 } from 'lucide-react'
 
 /* ── WhatsApp helper (uses env.ts — NO hardcoded numbers) ── */
@@ -2658,15 +2660,40 @@ function InquiryForm() {
     plan: 'basic',
   })
   const [submitting, setSubmitting] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  /* Track which fields the user has interacted with */
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const cities = ['Surat', 'Ahmedabad', 'Vadodara', 'Rajkot', 'Other']
 
+  /* Validation helpers */
+  const phoneDigits = form.phone.replace(/\D/g, '')
+  const errors = {
+    restaurantName: touched.restaurantName && !form.restaurantName.trim() ? 'Restaurant name is required' : '',
+    ownerName: touched.ownerName && !form.ownerName.trim() ? 'Your name is required' : '',
+    phone: touched.phone && phoneDigits.length > 0 && phoneDigits.length !== 10 ? 'Phone must be exactly 10 digits' : '',
+  }
+
+  const isFieldValid = (field: 'restaurantName' | 'ownerName') => touched[field] && form[field].trim().length > 0
+  const isPhoneValid = touched.phone && phoneDigits.length === 10
+
+  const isFormValid = form.restaurantName.trim() && form.ownerName.trim() && phoneDigits.length === 10
+
+  const handleFieldBlur = useCallback((field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+  }, [])
+
   const handleSubmit = useCallback(() => {
-    if (!form.restaurantName || !form.ownerName || !form.phone) {
-      return
-    }
-    setSubmitting(true)
-    const message = `Hi MenuMate! 🍽️
+    /* Mark all fields as touched to show errors */
+    setTouched({ restaurantName: true, ownerName: true, phone: true })
+    if (!isFormValid) return
+
+    /* Show success checkmark animation first */
+    setShowSuccess(true)
+    setTimeout(() => {
+      setShowSuccess(false)
+      const message = `Hi MenuMate! 🍽️
 
 Restaurant: ${form.restaurantName}
 Name: ${form.ownerName}
@@ -2675,22 +2702,28 @@ Plan: ${form.plan === 'basic' ? 'Basic (₹999/mo)' : 'Pro (₹1,499/mo)'}
 
 I want to get started with MenuMate.`
 
-    window.open(waLink(message), '_blank')
-    setTimeout(() => setSubmitting(false), 2000)
-  }, [form])
+      window.open(waLink(message), '_blank')
+      setSubmitting(false)
+    }, 1500)
+  }, [form, isFormValid])
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: '14px 16px',
-    color: T.textPrimary,
-    fontSize: 16,
-    outline: 'none',
-    fontFamily: 'inherit',
-    transition: 'border-color 150ms, background 150ms',
-    boxSizing: 'border-box',
+  const inputStyle = (field: 'restaurantName' | 'ownerName' | 'phone'): React.CSSProperties => {
+    const hasError = errors[field]
+    const valid = field === 'phone' ? isPhoneValid : isFieldValid(field as 'restaurantName' | 'ownerName')
+    return {
+      width: '100%',
+      background: 'rgba(255,255,255,0.05)',
+      border: `1px solid ${hasError ? '#FF3B30' : valid ? '#34C759' : 'rgba(255,255,255,0.1)'}`,
+      borderRadius: 12,
+      padding: '14px 16px',
+      color: T.textPrimary,
+      fontSize: 16,
+      outline: 'none',
+      fontFamily: 'inherit',
+      transition: 'border-color 150ms, background 150ms, box-shadow 150ms',
+      boxSizing: 'border-box',
+      boxShadow: hasError ? '0 0 0 3px rgba(255,59,48,0.12)' : valid ? '0 0 0 3px rgba(52,199,89,0.1)' : 'none',
+    }
   }
 
   const labelStyle: React.CSSProperties = {
@@ -2703,7 +2736,21 @@ I want to get started with MenuMate.`
     display: 'block',
   }
 
-  const isFormValid = form.restaurantName && form.ownerName && form.phone
+  const errorTextStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: '#FF3B30',
+    marginTop: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  }
+
+  /* How it works steps */
+  const steps = [
+    { icon: <ClipboardList size={18} />, title: 'Fill this form', desc: 'Quick 30-second setup' },
+    { icon: <Phone size={18} />, title: "We'll call you in 24hrs", desc: 'Personal onboarding' },
+    { icon: <Rocket size={18} />, title: 'Go live with your menu', desc: 'Start taking orders' },
+  ]
 
   return (
     <section id="get-started" style={{ background: T.sectionAlt, padding: '80px clamp(16px, 5vw, 40px)' }}>
@@ -2725,6 +2772,61 @@ I want to get started with MenuMate.`
             <p style={{ fontSize: 16, color: T.textSecondary, marginTop: 8, lineHeight: 1.6 }}>
               Fill this form. We&apos;ll call you within 2 hours and set everything up in 24 hours.
             </p>
+          </div>
+        </AnimatedSection>
+
+        {/* How it works mini steps */}
+        <AnimatedSection delay={80}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 'clamp(12px, 4vw, 24px)',
+              marginBottom: 32,
+              flexWrap: 'wrap',
+            }}
+          >
+            {steps.map((step, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 12,
+                  padding: '12px 16px',
+                  flex: '1 1 140px',
+                  maxWidth: 180,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    background: i === 0 ? 'rgba(230,57,70,0.1)' : i === 1 ? 'rgba(52,199,89,0.1)' : 'rgba(37,211,102,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ color: i === 0 ? T.accent : i === 1 ? T.green : T.waGreen }}>
+                    {step.icon}
+                  </span>
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, margin: 0, lineHeight: 1.3 }}>
+                    {step.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: T.textMuted, margin: '2px 0 0', lineHeight: 1.3 }}>
+                    {step.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </AnimatedSection>
 
@@ -2752,16 +2854,27 @@ I want to get started with MenuMate.`
                 placeholder="The Brew House"
                 value={form.restaurantName}
                 onChange={(e) => setForm({ ...form, restaurantName: e.target.value })}
-                style={inputStyle}
+                style={inputStyle('restaurantName')}
                 onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(230,57,70,0.5)'
-                  e.target.style.background = 'rgba(230,57,70,0.03)'
+                  if (!errors.restaurantName && !isFieldValid('restaurantName')) {
+                    e.target.style.borderColor = 'rgba(230,57,70,0.5)'
+                    e.target.style.background = 'rgba(230,57,70,0.03)'
+                  }
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(255,255,255,0.1)'
-                  e.target.style.background = 'rgba(255,255,255,0.05)'
+                  handleFieldBlur('restaurantName')
+                  if (!errors.restaurantName && !isFieldValid('restaurantName')) {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.1)'
+                    e.target.style.background = 'rgba(255,255,255,0.05)'
+                  }
                 }}
               />
+              {errors.restaurantName && (
+                <p style={errorTextStyle}>
+                  <X size={12} />
+                  {errors.restaurantName}
+                </p>
+              )}
             </div>
 
             {/* Your Name */}
@@ -2772,16 +2885,27 @@ I want to get started with MenuMate.`
                 placeholder="Rajesh Patel"
                 value={form.ownerName}
                 onChange={(e) => setForm({ ...form, ownerName: e.target.value })}
-                style={inputStyle}
+                style={inputStyle('ownerName')}
                 onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(230,57,70,0.5)'
-                  e.target.style.background = 'rgba(230,57,70,0.03)'
+                  if (!errors.ownerName && !isFieldValid('ownerName')) {
+                    e.target.style.borderColor = 'rgba(230,57,70,0.5)'
+                    e.target.style.background = 'rgba(230,57,70,0.03)'
+                  }
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(255,255,255,0.1)'
-                  e.target.style.background = 'rgba(255,255,255,0.05)'
+                  handleFieldBlur('ownerName')
+                  if (!errors.ownerName && !isFieldValid('ownerName')) {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.1)'
+                    e.target.style.background = 'rgba(255,255,255,0.05)'
+                  }
                 }}
               />
+              {errors.ownerName && (
+                <p style={errorTextStyle}>
+                  <X size={12} />
+                  {errors.ownerName}
+                </p>
+              )}
             </div>
 
             {/* WhatsApp Number */}
@@ -2806,21 +2930,59 @@ I want to get started with MenuMate.`
                   type="tel"
                   placeholder="98765 43210"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  style={{ ...inputStyle, paddingLeft: 52 }}
+                  onChange={(e) => {
+                    /* Only allow digits and spaces */
+                    const val = e.target.value.replace(/[^\d\s]/g, '')
+                    setForm({ ...form, phone: val })
+                  }}
+                  style={{ ...inputStyle('phone'), paddingLeft: 52 }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = 'rgba(230,57,70,0.5)'
-                    e.target.style.background = 'rgba(230,57,70,0.03)'
+                    if (!errors.phone && !isPhoneValid) {
+                      e.target.style.borderColor = 'rgba(230,57,70,0.5)'
+                      e.target.style.background = 'rgba(230,57,70,0.03)'
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255,255,255,0.1)'
-                    e.target.style.background = 'rgba(255,255,255,0.05)'
+                    handleFieldBlur('phone')
+                    if (!errors.phone && !isPhoneValid) {
+                      e.target.style.borderColor = 'rgba(255,255,255,0.1)'
+                      e.target.style.background = 'rgba(255,255,255,0.05)'
+                    }
                   }}
                 />
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
-                We&apos;ll call you on this number only
-              </p>
+              {/* Character counter + helper text */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 4,
+                }}
+              >
+                {errors.phone ? (
+                  <p style={errorTextStyle}>
+                    <X size={12} />
+                    {errors.phone}
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+                    We&apos;ll call you on this number only
+                  </p>
+                )}
+                {form.phone.length > 0 && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: isPhoneValid ? '#34C759' : phoneDigits.length > 10 ? '#FF3B30' : 'rgba(255,255,255,0.35)',
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {phoneDigits.length}/10 digits
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* City */}
@@ -2830,7 +2992,9 @@ I want to get started with MenuMate.`
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 style={{
-                  ...inputStyle,
+                  ...inputStyle('restaurantName'),
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  boxShadow: 'none',
                   appearance: 'none',
                   WebkitAppearance: 'none',
                   backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
@@ -2866,58 +3030,73 @@ I want to get started with MenuMate.`
             <div>
               <label style={labelStyle}>Plan Interested In *</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {(['basic', 'pro'] as const).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setForm({ ...form, plan: p })}
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: 12,
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      background: form.plan === p ? T.accent : 'rgba(255,255,255,0.05)',
-                      color: form.plan === p ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
-                      transition: 'all 150ms',
-                    }}
-                  >
-                    {p === 'basic' ? 'BASIC' : 'PRO'} — {p === 'basic' ? '₹999/mo' : '₹1,499/mo'}
-                  </button>
-                ))}
+                {(['basic', 'pro'] as const).map((p) => {
+                  const isActive = form.plan === p
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setForm({ ...form, plan: p })}
+                      className={isActive ? 'plan-btn-bounce' : ''}
+                      style={{
+                        padding: '14px 16px',
+                        borderRadius: 12,
+                        border: isActive ? `2px solid ${T.accent}` : '2px solid transparent',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        background: isActive ? T.accent : 'rgba(255,255,255,0.05)',
+                        color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
+                        transition: 'background 200ms, color 200ms, border-color 300ms, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms',
+                        transform: isActive ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: isActive ? '0 0 20px rgba(230,57,70,0.2)' : 'none',
+                      }}
+                    >
+                      {p === 'basic' ? 'BASIC' : 'PRO'} — {p === 'basic' ? '₹999/mo' : '₹1,499/mo'}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
-              disabled={!isFormValid || submitting}
+              disabled={!isFormValid || submitting || showSuccess}
               style={{
                 width: '100%',
                 height: 56,
                 borderRadius: 100,
-                background: isFormValid ? T.waGreen : 'rgba(255,255,255,0.1)',
+                background: isFormValid ? (showSuccess ? T.green : T.waGreen) : 'rgba(255,255,255,0.1)',
                 color: '#FFFFFF',
                 fontSize: 16,
                 fontWeight: 700,
                 border: 'none',
-                cursor: isFormValid ? 'pointer' : 'not-allowed',
+                cursor: isFormValid && !submitting && !showSuccess ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: isFormValid ? '0 0 30px rgba(37,211,102,0.25)' : 'none',
-                transition: 'all 150ms',
+                boxShadow: isFormValid ? `0 0 30px ${showSuccess ? 'rgba(52,199,89,0.3)' : 'rgba(37,211,102,0.25)'}` : 'none',
+                transition: 'all 200ms',
                 marginTop: 4,
                 opacity: isFormValid ? 1 : 0.5,
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
-              Send on WhatsApp →
+              {showSuccess ? (
+                <span className="inquiry-success-icon" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Check size={22} strokeWidth={3} />
+                  Sending to WhatsApp...
+                </span>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                  Send on WhatsApp →
+                </>
+              )}
             </button>
 
             <p
@@ -3467,6 +3646,27 @@ export default function LandingPage() {
         }
         @keyframes rotateGradientBorder {
           to { --border-angle: 360deg; }
+        }
+
+        /* ── Inquiry form: plan button bounce ── */
+        @keyframes planBtnBounce {
+          0% { transform: scale(1); }
+          40% { transform: scale(1.06); }
+          70% { transform: scale(0.98); }
+          100% { transform: scale(1.02); }
+        }
+        .plan-btn-bounce {
+          animation: planBtnBounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ── Inquiry form: success checkmark animation ── */
+        @keyframes inquirySuccessPop {
+          0% { transform: scale(0.5); opacity: 0; }
+          50% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .inquiry-success-icon {
+          animation: inquirySuccessPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
         }
       `}</style>
     </div>
