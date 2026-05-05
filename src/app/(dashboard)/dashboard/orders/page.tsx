@@ -2,8 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  RefreshCw, Loader2, Clock, ChevronDown, ChevronUp,
+  RefreshCw, Loader2, Clock, ChevronDown, ChevronUp, MoreVertical, ChefHat, CheckCircle2, MessageCircle,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import toast from 'react-hot-toast'
 import type { Order, OrderItem, OrderStatus } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -26,6 +33,7 @@ const STATUS_CONFIG: Record<OrderStatus, {
   dotBg: string
   shadow: string
   badgeClass: string
+  glowClass: string
 }> = {
   NEW: {
     label: 'New',
@@ -34,6 +42,7 @@ const STATUS_CONFIG: Record<OrderStatus, {
     dotBg: 'rgba(239,68,68,0.12)',
     shadow: '0 0 16px rgba(239,68,68,0.25)',
     badgeClass: 'dash-badge-error',
+    glowClass: 'dash-badge-glow-new',
   },
   PREPARING: {
     label: 'Preparing',
@@ -42,6 +51,7 @@ const STATUS_CONFIG: Record<OrderStatus, {
     dotBg: 'rgba(245,158,11,0.12)',
     shadow: '0 0 16px rgba(245,158,11,0.25)',
     badgeClass: 'dash-badge-warning',
+    glowClass: 'dash-badge-glow-preparing',
   },
   SERVED: {
     label: 'Served',
@@ -50,6 +60,7 @@ const STATUS_CONFIG: Record<OrderStatus, {
     dotBg: 'rgba(34,197,94,0.12)',
     shadow: '0 0 16px rgba(34,197,94,0.25)',
     badgeClass: 'dash-badge-success',
+    glowClass: 'dash-badge-glow-served',
   },
 }
 
@@ -66,7 +77,7 @@ function formatTime(dateStr: string): string {
 }
 
 function getOrderNumber(order: Order): string {
-  return ((order as unknown) as Record<string, unknown>).order_number as string || order.id.slice(0, 8).toUpperCase()
+  return order.order_number || order.id.slice(0, 8).toUpperCase()
 }
 
 function summarizeItems(items: OrderItem[], max: number = 3): string {
@@ -233,6 +244,48 @@ function OrderCard({
     }
   }
 
+  const handleQuickStatus = async (targetStatus: OrderStatus) => {
+    if (targetStatus === status) return
+    setUpdating(true)
+    try {
+      const res = await fetch(`/api/orders/${order.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: targetStatus }),
+      })
+      if (!res.ok) {
+        const j = await res.json()
+        toast.error(j.error || 'Could not update order')
+        return
+      }
+      toast.success(
+        targetStatus === 'PREPARING'
+          ? 'Order sent to kitchen'
+          : 'Order marked as served',
+      )
+      onUpdate()
+    } catch {
+      toast.error('Something went wrong')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleSendWhatsApp = () => {
+    const orderNum = getOrderNumber(order)
+    const itemsSummary = items.map((i) => `${i.quantity}× ${i.item_name}`).join(', ')
+    const total = formatPrice(order.total_amount)
+    const tableInfo = order.table_number ? `Table ${order.table_number}` : 'Takeaway'
+    const message = `📋 *Order #${orderNum}*
+📍 ${tableInfo}
+🍽️ ${itemsSummary}
+💰 Total: ${total}
+
+Status: *${STATUS_CONFIG[status].label}*`
+    const encoded = encodeURIComponent(message)
+    window.open(`https://wa.me/?text=${encoded}`, '_blank')
+  }
+
   const timeSince = timeAgoShort(order.created_at)
   const timeInfo = getTimeElapsedInfo(order.created_at)
   const config = STATUS_CONFIG[status]
@@ -287,6 +340,98 @@ function OrderCard({
             >
               #{getOrderNumber(order)}
             </span>
+
+            {/* Quick Actions Dropdown */}
+            <div onClick={(e) => e.stopPropagation()} style={{ marginLeft: 'auto' }}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="animate-btn-press flex-shrink-0"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--dash-border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: 'var(--dash-text-3)',
+                      transition: 'all 150ms ease',
+                    }}
+                    aria-label="Order actions"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="bottom"
+                  align="end"
+                  style={{
+                    background: 'var(--dash-surface-2)',
+                    border: '1px solid var(--dash-border)',
+                    borderRadius: 12,
+                    padding: 4,
+                    minWidth: 180,
+                    boxShadow: 'var(--dash-shadow-hover)',
+                  }}
+                >
+                  {status === 'NEW' && (
+                    <DropdownMenuItem
+                      onClick={() => handleQuickStatus('PREPARING')}
+                      disabled={updating}
+                      className="flex items-center gap-2.5"
+                      style={{
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--dash-text)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <ChefHat className="w-4 h-4" style={{ color: '#fbbf24' }} />
+                      Mark Preparing
+                    </DropdownMenuItem>
+                  )}
+                  {status !== 'SERVED' && (
+                    <DropdownMenuItem
+                      onClick={() => handleQuickStatus('SERVED')}
+                      disabled={updating}
+                      className="flex items-center gap-2.5"
+                      style={{
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--dash-text)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <CheckCircle2 className="w-4 h-4" style={{ color: '#4ade80' }} />
+                      Mark Served
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator style={{ margin: '4px 6px', background: 'var(--dash-border)' }} />
+                  <DropdownMenuItem
+                    onClick={handleSendWhatsApp}
+                    className="flex items-center gap-2.5"
+                    style={{
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--dash-text)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4" style={{ color: '#22d3ee' }} />
+                    Send to WhatsApp
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Time pill */}
@@ -664,7 +809,7 @@ export default function OrdersPage() {
               <button
                 key={tabStatus}
                 onClick={() => setActiveTab(tabStatus)}
-                className="flex-1 flex items-center justify-center gap-1 animate-btn-press min-w-0"
+                className={`flex-1 flex items-center justify-center gap-1 animate-btn-press min-w-0 ${config.glowClass}`}
                 style={{
                   padding: '9px 2px',
                   borderRadius: 10,
@@ -681,6 +826,19 @@ export default function OrdersPage() {
                   letterSpacing: '-0.01em',
                 }}
               >
+                {tabStatus === 'NEW' && count > 0 && (
+                  <span
+                    className="animate-dash-new-pulse-dot"
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      background: '#fbbf24',
+                      display: 'inline-block',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 {config.label}
                 {count > 0 && (
                   <span

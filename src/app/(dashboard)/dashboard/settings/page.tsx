@@ -219,7 +219,7 @@ function SettingsRow({
   return (
     <Wrapper
       {...(onClick ? { onClick } : {})}
-      className="flex items-center w-full text-left"
+      className={`flex items-center w-full text-left ${onClick ? 'dash-settings-row' : ''}`}
       style={{
         padding: '14px 16px',
         minHeight: '52px',
@@ -705,7 +705,6 @@ export default function SettingsPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        console.error('[Settings] WhatsApp save failed:', err)
         throw new Error(err.error || 'Failed to save')
       }
       const result = await res.json()
@@ -719,7 +718,6 @@ export default function SettingsPage() {
       fetchTables() // also re-fetch to keep data in sync
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save'
-      console.error('[Settings] WhatsApp error:', msg)
       toast.error(msg)
     } finally {
       setWhatsappSaving(false)
@@ -803,8 +801,9 @@ export default function SettingsPage() {
       }
 
       const json = await res.json()
+      if (!data) return
       setData({
-        restaurant: data!.restaurant,
+        restaurant: data.restaurant,
         tables: json.tables,
         masterQrUrl: json.masterQrUrl,
       })
@@ -835,7 +834,7 @@ export default function SettingsPage() {
         const err = await res.json()
         throw new Error(err.error || 'Delete failed')
       }
-      setData({ ...data!, tables: [], masterQrUrl: null })
+      setData({ ...data, tables: [], masterQrUrl: null })
       setTableCount('')
       setShowRegenConfirm(false)
       toast.success('All tables removed')

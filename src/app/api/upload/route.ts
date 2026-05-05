@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    // Whitelist allowed folder values to prevent path traversal
+    const ALLOWED_FOLDERS = ['menu-items', 'banners', 'logos', 'general']
+    const safeFolder = ALLOWED_FOLDERS.includes(folder) ? folder : 'general'
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 })
@@ -36,12 +40,12 @@ export async function POST(request: NextRequest) {
 
     // Upload to Cloudinary
     const publicId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    const url = await uploadToCloudinary(buffer, folder, publicId)
+    const url = await uploadToCloudinary(buffer, safeFolder, publicId)
 
     return NextResponse.json({
       success: true,
       url,
-      public_id: `menumate/${folder}/${publicId}`,
+      public_id: `menumate/${safeFolder}/${publicId}`,
     })
   } catch (error) {
     console.error('[Upload] Upload failed:', error)

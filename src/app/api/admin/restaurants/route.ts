@@ -131,6 +131,21 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Validate field formats
+  const trimmedName = restaurant_name.trim()
+  if (trimmedName.length === 0 || trimmedName.length > 100) {
+    return NextResponse.json({ message: 'Restaurant name must be 1-100 characters' }, { status: 400 })
+  }
+
+  if (owner_password.length < 8) {
+    return NextResponse.json({ message: 'Password must be at least 8 characters' }, { status: 400 })
+  }
+
+  const expiryDate = new Date(plan_expiry_date)
+  if (isNaN(expiryDate.getTime())) {
+    return NextResponse.json({ message: 'Invalid plan expiry date' }, { status: 400 })
+  }
+
   if (!['BASIC', 'PRO'].includes(plan)) {
     return NextResponse.json({ message: 'Plan must be BASIC or PRO' }, { status: 400 })
   }
@@ -175,7 +190,7 @@ export async function POST(req: NextRequest) {
     .eq('slug', slug)
     .single()
 
-  while (slugCheck) {
+  while (slugCheck && slugSuffix < 100) {
     slug = `${generateSlug(restaurant_name)}-${slugSuffix}`
     const { data: nextCheck } = await supabaseAdmin.client
       .from('restaurants')
@@ -184,6 +199,10 @@ export async function POST(req: NextRequest) {
       .single()
     if (!nextCheck) break
     slugSuffix++
+  }
+
+  if (slugCheck && slugSuffix >= 100) {
+    return NextResponse.json({ error: 'Could not generate unique slug' }, { status: 500 })
   }
 
   // Create restaurant

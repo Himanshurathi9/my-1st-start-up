@@ -113,6 +113,7 @@ function compressImage(file: File, maxWidth: number, quality: number): Promise<s
     const ctx = canvas.getContext('2d')
 
     img.onload = () => {
+      URL.revokeObjectURL(img.src)
       let { width, height } = img
       const targetWidth = Math.min(width, maxWidth)
       const targetHeight = Math.round(targetWidth * 9 / 16)
@@ -121,7 +122,10 @@ function compressImage(file: File, maxWidth: number, quality: number): Promise<s
       ctx?.drawImage(img, 0, 0, targetWidth, targetHeight)
       resolve(canvas.toDataURL('image/jpeg', quality))
     }
-    img.onerror = () => reject(new Error('Failed to load image'))
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src)
+      reject(new Error('Failed to load image'))
+    }
     img.src = URL.createObjectURL(file)
   })
 }
@@ -338,6 +342,9 @@ export default function BannersPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this banner? This action cannot be undone.')) {
+      return
+    }
     setDeletingId(id)
     try {
       const res = await fetch(`/api/banners?id=${id}`, { method: 'DELETE' })

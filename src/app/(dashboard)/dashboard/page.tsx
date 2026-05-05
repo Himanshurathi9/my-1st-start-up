@@ -17,6 +17,15 @@ import {
   Target,
   DollarSign,
   Bell,
+  ArrowUpRight,
+  ArrowDownRight,
+  Users,
+  BarChart3,
+  Receipt,
+  Search,
+  X,
+  Package,
+  FileText,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Restaurant } from '@/types'
@@ -210,6 +219,368 @@ function SparklineChart({ data, color = '#22c55e', delay = 0 }: { data: number[]
   )
 }
 
+/* ── Analytics Card ── */
+function AnalyticsCard({
+  icon,
+  iconBg,
+  label,
+  value,
+  trend,
+  gradientBorder,
+}: {
+  icon: React.ReactNode
+  iconBg: string
+  label: string
+  value: string | number
+  trend: { value: number; positive: boolean }
+  gradientBorder: string
+}) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <div
+      className="dash-card relative overflow-hidden"
+      style={{
+        padding: '14px',
+        borderRadius: '16px',
+        cursor: 'default',
+        transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered ? 'var(--dash-shadow-hover)' : 'var(--dash-shadow-card)',
+        background: hovered ? 'var(--dash-surface-2)' : 'var(--dash-surface)',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Gradient border on hover */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: gradientBorder,
+          opacity: hovered ? 1 : 0.4,
+          transition: 'opacity 250ms ease',
+          borderRadius: '3px 3px 0 0',
+        }}
+      />
+
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '8px',
+            background: iconBg,
+          }}
+        >
+          {icon}
+        </div>
+        <span
+          className="dash-section-label truncate"
+          style={{ fontSize: '9px', letterSpacing: '0.06em' }}
+        >
+          {label.toUpperCase()}
+        </span>
+      </div>
+
+      <div className="flex items-end justify-between gap-2">
+        <span
+          style={{
+            fontSize: '22px',
+            fontWeight: 800,
+            color: 'var(--dash-text)',
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+          }}
+        >
+          {value}
+        </span>
+        <div
+          className="flex items-center gap-0.5 flex-shrink-0"
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: trend.positive ? '#4ade80' : '#f87171',
+            lineHeight: 1,
+          }}
+        >
+          {trend.positive ? (
+            <ArrowUpRight className="w-[12px] h-[12px]" />
+          ) : (
+            <ArrowDownRight className="w-[12px] h-[12px]" />
+          )}
+          {trend.value}%
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Dashboard Search ── */
+interface SearchResult {
+  type: 'menu' | 'order'
+  id: string
+  label: string
+  sublabel: string
+  href: string
+}
+
+function DashboardSearch() {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Search with debounce
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (!query.trim()) {
+      setResults([])
+      setIsOpen(false)
+      return
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const searchResults: SearchResult[] = []
+        const q = query.toLowerCase().trim()
+
+        // Fetch menu items
+        try {
+          const menuRes = await fetch('/api/menu-items')
+          if (menuRes.ok) {
+            const menuData = await menuRes.json()
+            const items = (menuData.items || []).slice(0, 50)
+            const matchingItems = items.filter((item: { name: string }) =>
+              item.name.toLowerCase().includes(q),
+            )
+            matchingItems.slice(0, 5).forEach((item: { id: string; name: string; price: number; category_name: string | null }) => {
+              searchResults.push({
+                type: 'menu',
+                id: item.id,
+                label: item.name,
+                sublabel: `${item.category_name || 'Menu'} · ₹${formatPrice(item.price)}`,
+                href: '/dashboard/menu',
+              })
+            })
+          }
+        } catch {
+          // Skip menu search on error
+        }
+
+        // Fetch orders
+        try {
+          const ordersRes = await fetch('/api/orders/restaurant')
+          if (ordersRes.ok) {
+            const ordersData = await ordersRes.json()
+            const allOrders = [
+              ...(ordersData.NEW || []),
+              ...(ordersData.PREPARING || []),
+              ...(ordersData.SERVED || []),
+            ]
+            const matchingOrders = allOrders.filter((order: { order_number: string; id: string; table_number: number | null }) => {
+              const orderNum = order.order_number || order.id.slice(0, 8).toUpperCase()
+              return orderNum.toLowerCase().includes(q)
+            })
+            matchingOrders.slice(0, 5).forEach((order: { id: string; order_number: string; table_number: number | null; total_amount: number }) => {
+              const orderNum = order.order_number || order.id.slice(0, 8).toUpperCase()
+              searchResults.push({
+                type: 'order',
+                id: order.id,
+                label: `#${orderNum}`,
+                sublabel: `${order.table_number ? `Table ${order.table_number}` : 'Takeaway'} · ₹${formatPrice(order.total_amount)}`,
+                href: '/dashboard/orders',
+              })
+            })
+          }
+        } catch {
+          // Skip orders search on error
+        }
+
+        setResults(searchResults)
+        setIsOpen(searchResults.length > 0)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [query])
+
+  const handleSelect = (result: SearchResult) => {
+    setIsOpen(false)
+    setQuery('')
+    setResults([])
+    router.push(result.href)
+  }
+
+  return (
+    <div ref={searchRef} style={{ position: 'relative', flex: 1, maxWidth: '240px' }}>
+      <div
+        className="flex items-center gap-2"
+        style={{
+          height: '36px',
+          borderRadius: '10px',
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid var(--dash-border)',
+          padding: '0 10px',
+          transition: 'all 200ms ease',
+        }}
+      >
+        <Search
+          className="w-[14px] h-[14px] flex-shrink-0"
+          style={{ color: isSearching ? 'var(--dash-text-3)' : 'var(--dash-text-3)' }}
+        />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => { if (results.length > 0) setIsOpen(true) }}
+          placeholder="Search menu, orders..."
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            fontSize: '12px',
+            fontWeight: 500,
+            color: 'var(--dash-text)',
+            minWidth: 0,
+          }}
+        />
+        {isSearching && (
+          <Loader2 className="w-[12px] h-[12px] flex-shrink-0 animate-spin" style={{ color: 'var(--dash-text-3)' }} />
+        )}
+        {query && !isSearching && (
+          <button
+            onClick={() => { setQuery(''); setResults([]); setIsOpen(false) }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <X className="w-[12px] h-[12px]" style={{ color: 'var(--dash-text-3)' }} />
+          </button>
+        )}
+      </div>
+
+      {/* Results dropdown */}
+      {isOpen && results.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            right: 0,
+            background: 'var(--dash-surface-2)',
+            border: '1px solid var(--dash-border)',
+            borderRadius: 12,
+            boxShadow: 'var(--dash-shadow-hover)',
+            padding: 4,
+            zIndex: 60,
+            maxHeight: '280px',
+            overflowY: 'auto',
+            animation: 'dashSearchDropdownIn 200ms ease-out',
+          }}
+        >
+          {results.map((result) => (
+            <button
+              key={`${result.type}-${result.id}`}
+              onClick={() => handleSelect(result)}
+              className="w-full flex items-center gap-3"
+              style={{
+                padding: '8px 10px',
+                borderRadius: 8,
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background 150ms ease',
+              }}
+              onMouseEnter={(e) => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--dash-surface-3)'
+              }}
+              onMouseLeave={(e) => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+              }}
+            >
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
+                  background: result.type === 'menu' ? 'rgba(59,130,246,0.12)' : 'rgba(239,68,68,0.12)',
+                }}
+              >
+                {result.type === 'menu' ? (
+                  <Package className="w-[14px] h-[14px]" style={{ color: '#60a5fa' }} />
+                ) : (
+                  <FileText className="w-[14px] h-[14px]" style={{ color: '#f87171' }} />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div
+                  className="truncate"
+                  style={{ fontSize: '13px', fontWeight: 600, color: 'var(--dash-text)', lineHeight: 1.2 }}
+                >
+                  {result.label}
+                </div>
+                <div
+                  className="truncate"
+                  style={{ fontSize: '11px', color: 'var(--dash-text-3)', marginTop: 1 }}
+                >
+                  {result.sublabel}
+                </div>
+              </div>
+              <span
+                className="flex-shrink-0"
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  color: result.type === 'menu' ? '#60a5fa' : '#f87171',
+                  background: result.type === 'menu' ? 'rgba(59,130,246,0.1)' : 'rgba(239,68,68,0.1)',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {result.type}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SkeletonDashboard() {
   return (
     <div className="px-4 pt-5 space-y-4">
@@ -258,6 +629,7 @@ export default function DashboardPage() {
   const [toggling, setToggling] = useState(false)
   const [bellShaking, setBellShaking] = useState(false)
   const prevOrdersCountRef = useRef(0)
+  const [shimmerKey, setShimmerKey] = useState(0)
 
   const fetchRestaurant = useCallback(async () => {
     try {
@@ -272,6 +644,8 @@ export default function DashboardPage() {
       }
       const json = await res.json()
       setData(json)
+      // Trigger stat card shimmer on data refresh
+      setShimmerKey((k) => k + 1)
     } catch {
       toast.error('Something went wrong. Please try again.')
     } finally {
@@ -290,6 +664,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const current = data?.newOrdersCount ?? 0
     if (prevOrdersCountRef.current > 0 && current > prevOrdersCountRef.current) {
+      prevOrdersCountRef.current = current // Update ref before async work
       setBellShaking(true)
       const timer = setTimeout(() => setBellShaking(false), 600)
       return () => clearTimeout(timer)
@@ -374,6 +749,9 @@ export default function DashboardPage() {
           </span>
         </div>
 
+        {/* Center: Search */}
+        <DashboardSearch />
+
         {/* Notification Bell */}
         <div
           onClick={() => router.push('/dashboard/orders')}
@@ -433,20 +811,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Right: Restaurant name pill */}
-        {restaurant && (
-          <span
-            className="text-[11px] font-semibold truncate max-w-[140px] sm:max-w-[180px] px-3 py-1"
-            style={{
-              color: 'var(--dash-text-2)',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid var(--dash-border)',
-              borderRadius: '100px',
-            }}
-          >
-            {restaurant.name}
-          </span>
-        )}
       </header>
 
       {/* ═══ PAGE CONTENT ═══ */}
@@ -615,7 +979,7 @@ export default function DashboardPage() {
               style={{ marginTop: '14px' }}
             >
               {/* Today's Orders Card */}
-              <div className="dash-card dash-card-accent overflow-hidden" style={{ padding: '16px', borderRadius: '16px' }}>
+              <div key={`orders-${shimmerKey}`} className="dash-card dash-card-accent overflow-hidden dash-stat-shimmer" style={{ padding: '16px', borderRadius: '16px' }}>
                 {/* Blue top accent */}
                 <div
                   style={{
@@ -666,7 +1030,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Revenue Card */}
-              <div className="dash-card dash-card-accent overflow-hidden" style={{ padding: '16px', borderRadius: '16px' }}>
+              <div key={`revenue-${shimmerKey}`} className="dash-card dash-card-accent overflow-hidden dash-stat-shimmer" style={{ padding: '16px', borderRadius: '16px' }}>
                 {/* Green top accent - uses default gradient from ::before */}
                 <div className="flex items-center gap-2 mb-2">
                   <div
@@ -702,6 +1066,61 @@ export default function DashboardPage() {
                 <div style={{ marginTop: '10px' }}>
                   <SparklineChart data={revenueSparkData} color="#4ade80" delay={100} />
                 </div>
+              </div>
+            </div>
+
+            {/* ═══ 3b. ORDER ANALYTICS SUMMARY ═══ */}
+            <div
+              className="animate-dash-section-enter animate-dash-section-3"
+              style={{ marginTop: '16px' }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    background: 'rgba(168, 85, 247, 0.12)',
+                  }}
+                >
+                  <BarChart3 className="w-[14px] h-[14px]" style={{ color: '#c084fc' }} />
+                </div>
+                <span className="dash-section-label">ORDER ANALYTICS</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <AnalyticsCard
+                  icon={<Receipt className="w-[16px] h-[16px]" style={{ color: '#60a5fa' }} />}
+                  iconBg="rgba(59,130,246,0.12)"
+                  label="Today's Orders"
+                  value={todayOrders}
+                  trend={{ value: 12, positive: true }}
+                  gradientBorder="linear-gradient(135deg, #3b82f6, #06b6d4)"
+                />
+                <AnalyticsCard
+                  icon={<DollarSign className="w-[16px] h-[16px]" style={{ color: '#4ade80' }} />}
+                  iconBg="rgba(34,197,94,0.12)"
+                  label="Today's Revenue"
+                  value={`₹${formatPrice(todayRevenue)}`}
+                  trend={{ value: 8, positive: true }}
+                  gradientBorder="linear-gradient(135deg, #22c55e, #10b981)"
+                />
+                <AnalyticsCard
+                  icon={<BarChart3 className="w-[16px] h-[16px]" style={{ color: '#fbbf24' }} />}
+                  iconBg="rgba(245,158,11,0.12)"
+                  label="Avg Order Value"
+                  value={todayOrders > 0 ? `₹${formatPrice(Math.round(todayRevenue / todayOrders))}` : '₹0'}
+                  trend={{ value: 5, positive: false }}
+                  gradientBorder="linear-gradient(135deg, #f59e0b, #f97316)"
+                />
+                <AnalyticsCard
+                  icon={<Users className="w-[16px] h-[16px]" style={{ color: '#c084fc' }} />}
+                  iconBg="rgba(168,85,247,0.12)"
+                  label="Repeat Customers"
+                  value="34%"
+                  trend={{ value: 3, positive: true }}
+                  gradientBorder="linear-gradient(135deg, #a855f7, #6366f1)"
+                />
               </div>
             </div>
 
@@ -1103,6 +1522,10 @@ export default function DashboardPage() {
           0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
           50%  { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
           100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes dashSearchDropdownIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
     </div>

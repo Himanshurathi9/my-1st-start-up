@@ -65,6 +65,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 })
     }
 
+    // Validate note length
+    if (note && note.length > 500) {
+      return NextResponse.json({ error: 'Order note must be under 500 characters' }, { status: 400 })
+    }
+
+    // Server-side total verification
+    const serverTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    if (Math.abs(serverTotal - total_amount) > 1) {
+      // Allow ₹1 tolerance for rounding differences
+      return NextResponse.json({ error: 'Total amount does not match item prices' }, { status: 400 })
+    }
+
+    // Validate item fields
+    const VALID_FOOD_TYPES = ['VEG', 'NONVEG', 'EGG']
+    for (const item of items) {
+      if (!item.name || item.name.trim().length > 100) {
+        return NextResponse.json({ error: 'Invalid item name' }, { status: 400 })
+      }
+      if (item.price < 0 || item.quantity < 1) {
+        return NextResponse.json({ error: 'Invalid item price or quantity' }, { status: 400 })
+      }
+      if (item.foodType && !VALID_FOOD_TYPES.includes(item.foodType)) {
+        return NextResponse.json({ error: 'Invalid food type' }, { status: 400 })
+      }
+    }
+
     // Verify restaurant exists
     const { data: restaurant, error: restError } = await supabaseAdmin.client
       .from('restaurants')

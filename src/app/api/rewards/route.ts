@@ -149,10 +149,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Post-redemption: reset stamp count (mark all non-redeemed stamps as redeemed)
+    // CRITICAL: Must scope to restaurant_id to avoid resetting stamps at other restaurants
     const { error: stampResetError } = await supabaseAdmin.client
       .from('stamps')
       .update({ is_redeemed: true })
       .eq('customer_id', reward.customer_id)
+      .eq('restaurant_id', restaurant.id)
       .eq('is_redeemed', false)
 
     if (stampResetError) {

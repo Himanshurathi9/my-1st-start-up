@@ -85,6 +85,7 @@ function ItemCard({
   onEdit: (item: MenuItemWithCategory) => void
 }) {
   const [toggling, setToggling] = useState(false)
+  const [bounceKey, setBounceKey] = useState(0)
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -98,6 +99,7 @@ function ItemCard({
       })
       if (res.ok) {
         onToggle(item.id, newVal)
+        setBounceKey((k) => k + 1)
       } else {
         toast.error('Could not update availability')
       }
@@ -242,7 +244,8 @@ function ItemCard({
           className="min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
         >
           <div
-            className={`dash-toggle-track ${item.is_available ? 'dash-toggle-track-on' : ''}`}
+            key={`toggle-${bounceKey}`}
+            className={`dash-toggle-track ${item.is_available ? 'dash-toggle-track-on animate-dash-toggle-bounce' : ''}`}
             style={{ width: '44px', height: '24px', borderRadius: '12px' }}
           >
             <div
@@ -585,7 +588,8 @@ function AddCategorySheetInner({
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 300)
+    const timer = setTimeout(() => inputRef.current?.focus(), 300)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleSubmit = () => {
@@ -853,7 +857,6 @@ export default function MenuPage() {
 
   const hasNoCategories = categories.length === 0
   const hasNoItems = filteredItems.length === 0
-  const availableCount = filteredItems.filter(i => i.is_available).length
   const totalItemCount = items.length
 
   // Active chip style (gradient green fill)

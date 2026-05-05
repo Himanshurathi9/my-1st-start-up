@@ -2011,3 +2011,101 @@ body {
   box-shadow: 0 0 12px rgba(34,197,94,0.08);
   transition: color 250ms var(--ease-spring), background 250ms var(--ease-spring), box-shadow 300ms var(--ease-smooth);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD MICRO-INTERACTIONS (v5.1) — Task 7-a Polish
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Order Status Badge Glow ── */
+/* Subtle ambient glow behind status badges */
+.dash-badge-glow-new {
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px rgba(245, 158, 11, 0.1);
+}
+.dash-badge-glow-preparing {
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.25), 0 0 16px rgba(59, 130, 246, 0.1);
+}
+.dash-badge-glow-served {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.25), 0 0 16px rgba(34, 197, 94, 0.1);
+}
+
+/* Pulsing dot for NEW orders — small amber dot */
+@keyframes dash-new-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.4); }
+}
+.animate-dash-new-pulse-dot {
+  animation: dash-new-pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* ── 2. Stat Card Shimmer on Refresh ── */
+/* One-time shimmer sweep (300ms) that fades out */
+@keyframes dash-stat-shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+.dash-stat-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.dash-stat-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: dash-stat-shimmer 300ms ease-out forwards;
+  pointer-events: none;
+}
+
+/* ── 3. Menu Item Toggle Bounce ── */
+@keyframes dash-toggle-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.95); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.animate-dash-toggle-bounce {
+  animation: dash-toggle-bounce 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── 4. Bottom Nav Active Pill Indicator ── */
+/* Sliding pill that moves behind the active tab */
+.dash-nav-pill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.06);
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), width 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 5. Settings Row Hover Lift ── */
+.dash-settings-row {
+  transition: transform 200ms var(--ease-spring), box-shadow 200ms var(--ease-smooth), background 200ms var(--ease-smooth);
+  cursor: pointer;
+}
+.dash-settings-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+.dash-settings-row:active {
+  transform: translateY(0) scale(0.99);
+  transition-duration: 100ms;
+}

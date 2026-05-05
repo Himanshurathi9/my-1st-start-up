@@ -34,6 +34,9 @@ export interface Restaurant {
   plan_expiry_date: string | null
   setup_fee_paid: boolean
   theme: ThemeName | null
+  description: string | null
+  cuisine_type: string | null
+  opening_hours: string | null
   created_at: string
 }
 
@@ -74,6 +77,7 @@ export interface Order {
   restaurant_id: string
   table_id: string | null
   table_number: number | null
+  order_number?: string
   status: OrderStatus
   note: string | null
   total_amount: number
