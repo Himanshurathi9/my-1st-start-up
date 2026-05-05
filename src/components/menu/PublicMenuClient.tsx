@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   ShoppingBag, Search, X,
-  Bell, Receipt, ChefHat, Gift, UtensilsCrossed,
+  Bell, Receipt, Gift, UtensilsCrossed,
 } from 'lucide-react'
 import CartSheet from './CartSheet'
 import MenuItemCard from './MenuItemCard'
@@ -158,6 +158,8 @@ export default function PublicMenuClient({
   const [stampSettings, setStampSettings] = useState<StampSettings | null>(null)
   const [foodTypeFilter, setFoodTypeFilter] = useState<'all' | 'VEG' | 'NONVEG'>('all')
   const [orderType, setOrderType] = useState<'dine-in' | 'takeaway'>('dine-in')
+  const [cartFloatId, setCartFloatId] = useState(0)
+  const [cartBadgePulse, setCartBadgePulse] = useState(false)
 
   // ─── Debounce guards (prevent double-click double-fire) ─────
   const waiterFiringRef = useRef(false)
@@ -259,6 +261,11 @@ export default function PublicMenuClient({
       if (ex) return prev.map((c) => (c.menuItemId === item.id ? { ...c, quantity: c.quantity + 1 } : c))
       return [...prev, { menuItemId: item.id, name: item.name, price: item.price, quantity: 1, foodType: item.food_type }]
     })
+    // Trigger +1 float animation
+    setCartFloatId((id) => id + 1)
+    // Trigger badge pulse
+    setCartBadgePulse(true)
+    setTimeout(() => setCartBadgePulse(false), 400)
   }, [])
 
   const removeFromCart = useCallback((menuItemId: string) => {
@@ -610,8 +617,23 @@ export default function PublicMenuClient({
                 fontSize: 10, fontWeight: 700, display: 'flex',
                 alignItems: 'center', justifyContent: 'center', padding: '0 4px',
                 lineHeight: 1,
+                animation: cartBadgePulse ? 'menu-cart-pulse 400ms ease' : 'none',
               }}>
                 {cartCount}
+              </span>
+            )}
+            {/* +1 floating animation */}
+            {cartFloatId > 0 && (
+              <span
+                key={cartFloatId}
+                style={{
+                  position: 'absolute', top: -2, right: -2,
+                  fontSize: 11, fontWeight: 800, color: 'var(--m-primary)',
+                  pointerEvents: 'none', zIndex: 10,
+                  animation: 'menu-cart-float 600ms ease forwards',
+                }}
+              >
+                +1
               </span>
             )}
           </button>
@@ -741,22 +763,25 @@ export default function PublicMenuClient({
             {/* Search results empty state */}
             {q.length > 0 && filtered.length === 0 ? (
               <div className="menu-empty-state">
-                <div className="menu-empty-icon">
-                  <Search size={28} style={{ color: 'var(--m-text-muted)' }} strokeWidth={1.5} />
-                </div>
+                <div className="menu-empty-icon">🔍</div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--m-text)', marginBottom: 4 }}>
                   No results for &ldquo;{searchQuery.trim()}&rdquo;
                 </h3>
                 <p style={{ fontSize: 13, color: 'var(--m-text-muted)', maxWidth: 260 }}>
                   Try a different search or browse categories.
                 </p>
+                <button
+                  className="menu-empty-clear-btn"
+                  onClick={() => { setSearchQuery(''); setSearchOpen(false) }}
+                >
+                  <X size={14} strokeWidth={2.5} />
+                  Clear search
+                </button>
               </div>
             ) : items.length === 0 ? (
               /* Empty menu state */
               <div className="menu-empty-state">
-                <div className="menu-empty-icon">
-                  <ChefHat size={28} style={{ color: 'var(--m-text-muted)' }} strokeWidth={1.5} />
-                </div>
+                <div className="menu-empty-icon">🍽️</div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--m-text)', marginBottom: 4 }}>No items yet</h3>
                 <p style={{ fontSize: 13, color: 'var(--m-text-muted)', maxWidth: 260 }}>
                   Menu is being prepared. Check back soon!
@@ -765,13 +790,18 @@ export default function PublicMenuClient({
             ) : displayGroups.length === 0 ? (
               /* Category filter returns no results */
               <div className="menu-empty-state">
-                <div className="menu-empty-icon">
-                  <Search size={28} style={{ color: 'var(--m-text-muted)' }} strokeWidth={1.5} />
-                </div>
+                <div className="menu-empty-icon">🍽️</div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--m-text)', marginBottom: 4 }}>No items found</h3>
                 <p style={{ fontSize: 13, color: 'var(--m-text-muted)', maxWidth: 260 }}>
                   This category is empty. Try another one.
                 </p>
+                <button
+                  className="menu-empty-clear-btn"
+                  onClick={() => setActiveCategory('all')}
+                >
+                  <UtensilsCrossed size={14} strokeWidth={2} />
+                  View all items
+                </button>
               </div>
             ) : (
               /* ── Product Grid ── */

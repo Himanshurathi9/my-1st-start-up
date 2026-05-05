@@ -7,14 +7,17 @@ import { Eye, EyeOff, AlertCircle, Loader2, X, Star, ShieldCheck } from 'lucide-
 import Link from 'next/link'
 import { env } from '@/lib/env'
 
-/* ── Particle data (generated once) ── */
-const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
-  id: i,
-  left: `${Math.random() * 100}%`,
-  size: 2 + Math.random() * 2,
-  duration: 14 + Math.random() * 18,
-  delay: Math.random() * 12,
-}))
+/* ── Particle data (deterministic on server, enhanced on client) ── */
+function generateParticles() {
+  return Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    left: `${((i * 37 + 13) % 100)}%`,
+    size: 2 + ((i * 7 + 3) % 5) * 0.4,
+    duration: 14 + ((i * 11 + 5) % 18),
+    delay: ((i * 23 + 7) % 12),
+  }))
+}
+const PARTICLES = generateParticles()
 
 /* ── Password strength calculator ── */
 function getPasswordStrength(pw: string): { score: number; label: string; color: string; bgColor: string } {

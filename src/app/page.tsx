@@ -28,6 +28,8 @@ import {
   Cookie,
   Phone,
   Rocket,
+  Percent,
+  ShieldCheck,
 } from 'lucide-react'
 
 /* ── WhatsApp helper (uses env.ts — NO hardcoded numbers) ── */
@@ -3903,8 +3905,364 @@ function LandingSkeleton() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MAIN LANDING PAGE
+   SECTION — HOW WE'RE DIFFERENT
    ═══════════════════════════════════════════════════════════ */
+function HowWereDifferentSection() {
+  const cards = [
+    {
+      icon: <Percent size={28} color={T.accent} strokeWidth={1.8} />,
+      title: 'No Commission',
+      desc: 'Keep 100% of your revenue. Unlike food apps that take 20-30%, MenuMate charges a flat monthly fee — no hidden cuts from your orders.',
+    },
+    {
+      icon: <MessageCircle size={28} color={T.accent} strokeWidth={1.8} />,
+      title: 'WhatsApp Native',
+      desc: 'Orders arrive directly on WhatsApp — the app your staff already uses. No new software to learn, no extra devices needed.',
+    },
+    {
+      icon: <Zap size={28} color={T.accent} strokeWidth={1.8} />,
+      title: 'Instant Setup',
+      desc: 'Go live in under 24 hours. We handle everything — menu digitization, QR codes, staff training, and onboarding support.',
+    },
+  ]
+  return (
+    <AnimatedSection>
+      <section style={{ padding: '80px 24px', background: T.bg }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
+          <SectionLabel text="Why MenuMate" />
+          <h2 style={{
+            fontSize: 'clamp(28px, 4vw, 42px)',
+            fontWeight: 800,
+            color: T.textPrimary,
+            letterSpacing: '-0.03em',
+            marginTop: 12,
+            lineHeight: 1.2,
+          }}>
+            How We're Different
+          </h2>
+          <p style={{
+            color: T.textSecondary,
+            fontSize: 17,
+            maxWidth: 560,
+            margin: '16px auto 0',
+            lineHeight: 1.6,
+          }}>
+            Built for Indian restaurants — not adapted from Western SaaS tools.
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 20,
+            marginTop: 48,
+          }}>
+            {cards.map((c, i) => (
+              <div
+                key={c.title}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = T.cardBorderHover
+                  e.currentTarget.style.boxShadow = `0 0 30px ${T.accentGlow}, 0 8px 32px rgba(0,0,0,0.3)`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = T.cardBorder
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+                style={{
+                  background: T.card,
+                  border: `1px solid ${T.cardBorder}`,
+                  borderRadius: 16,
+                  padding: '32px 24px',
+                  textAlign: 'left',
+                  transition: 'border-color 250ms ease, box-shadow 250ms ease',
+                  cursor: 'default',
+                }}
+              >
+                <div style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  background: T.accentGlow,
+                  border: `1px solid ${T.accent}30`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                }}>
+                  {c.icon}
+                </div>
+                <h3 style={{
+                  fontSize: 19,
+                  fontWeight: 700,
+                  color: T.textPrimary,
+                  marginBottom: 8,
+                }}>
+                  {c.title}
+                </h3>
+                <p style={{
+                  fontSize: 14,
+                  color: T.textSecondary,
+                  lineHeight: 1.65,
+                  margin: 0,
+                }}>
+                  {c.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION — SUCCESS STORIES CAROUSEL
+   ═══════════════════════════════════════════════════════════ */
+function SuccessStoriesCarousel() {
+  const stories = [
+    { metric: '120%', desc: 'increase in orders', name: 'Brew House Cafe' },
+    { metric: '₹15K', desc: 'saved on printing', name: 'The Spice Kitchen' },
+    { metric: '3x', desc: 'more repeat customers', name: 'Pizza Planet' },
+    { metric: '40min', desc: 'saved per day on orders', name: 'Royal Dining' },
+    { metric: '98%', desc: 'customer satisfaction', name: 'Cafe Milano' },
+  ]
+  const doubled = [...stories, ...stories]
+  return (
+    <AnimatedSection>
+      <section style={{ padding: '60px 0', background: T.sectionAlt, overflow: 'hidden' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <SectionLabel text="Real Results" />
+          <h3 style={{
+            fontSize: 'clamp(22px, 3vw, 32px)',
+            fontWeight: 700,
+            color: T.textPrimary,
+            marginTop: 8,
+          }}>
+            Success Stories from Our Partners
+          </h3>
+        </div>
+        <div style={{
+          position: 'relative',
+          maskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+          WebkitMaskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+        }}>
+          <div className="success-marquee-track" style={{
+            display: 'flex',
+            gap: 20,
+            animation: 'successMarqueeScroll 25s linear infinite',
+            width: 'max-content',
+          }}>
+            {doubled.map((s, i) => (
+              <div key={i} style={{
+                flexShrink: 0,
+                minWidth: 220,
+                padding: '24px 20px',
+                background: T.card,
+                border: `1px solid ${T.cardBorder}`,
+                borderRadius: 14,
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: 'clamp(32px, 4vw, 44px)',
+                  fontWeight: 800,
+                  color: T.accent,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                }}>
+                  {s.metric}
+                </div>
+                <p style={{
+                  fontSize: 14,
+                  color: T.textSecondary,
+                  marginTop: 8,
+                  marginBottom: 4,
+                }}>
+                  {s.desc}
+                </p>
+                <span style={{
+                  fontSize: 11,
+                  color: T.textMuted,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}>
+                  {s.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <style jsx global>{`
+          @keyframes successMarqueeScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .success-marquee-track:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+      </section>
+    </AnimatedSection>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION — RISK-FREE GUARANTEE
+   ═══════════════════════════════════════════════════════════ */
+function RiskFreeGuaranteeSection() {
+  const badges = [
+    'No credit card required',
+    'Cancel anytime',
+    'Free onboarding support',
+  ]
+  return (
+    <AnimatedSection>
+      <section style={{ padding: '80px 24px', background: T.bg }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: `${T.accent}18`,
+            border: `2px solid ${T.accent}40`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+          }}>
+            <ShieldCheck size={36} color={T.accent} strokeWidth={1.6} />
+          </div>
+          <h2 style={{
+            fontSize: 'clamp(26px, 4vw, 40px)',
+            fontWeight: 800,
+            color: T.textPrimary,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.2,
+          }}>
+            30-Day Risk-Free Guarantee
+          </h2>
+          <p style={{
+            color: T.textSecondary,
+            fontSize: 17,
+            marginTop: 16,
+            lineHeight: 1.7,
+          }}>
+            Try MenuMate free for 30 days. If you don't see more orders, we'll refund you — no questions asked.
+          </p>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            justifyContent: 'center',
+            marginTop: 32,
+          }}>
+            {badges.map((b) => (
+              <span key={b} style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 18px',
+                background: T.trustBg,
+                border: `1px solid ${T.trustBorder}`,
+                borderRadius: 100,
+                color: T.trustText,
+                fontSize: 13,
+                fontWeight: 600,
+              }}>
+                <Check size={14} color={T.green} strokeWidth={2.5} />
+                {b}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIVE CHAT WIDGET (Floating Button)
+   ═══════════════════════════════════════════════════════════ */
+function LiveChatWidget() {
+  const { scrollY } = useScrollDirection()
+  const [hovered, setHovered] = useState(false)
+  const visible = scrollY > 600
+  return (
+    <div>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 28,
+          left: 28,
+          zIndex: 90,
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'scale(1)' : 'scale(0.8)',
+          pointerEvents: visible ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease, transform 0.3s ease',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <div style={{
+          position: 'absolute',
+          top: -6,
+          left: -6,
+          right: -6,
+          bottom: -6,
+          borderRadius: '50%',
+          border: '2px solid rgba(37,211,102,0.25)',
+          animation: 'waChatPulse 2s ease-out infinite',
+        }} />
+        <a
+          href={waLink('Hi, I have a question about MenuMate')}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat with us on WhatsApp"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: '#25D366',
+            boxShadow: '0 4px 16px rgba(37,211,102,0.4)',
+            textDecoration: 'none',
+            transition: 'box-shadow 200ms, transform 150ms',
+            transform: hovered ? 'scale(1.08)' : 'scale(1)',
+          }}
+        >
+          <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
+        </a>
+        {hovered && (
+          <div style={{
+            position: 'absolute',
+            left: 62,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: T.card,
+            border: `1px solid ${T.cardBorder}`,
+            borderRadius: 8,
+            padding: '6px 12px',
+            whiteSpace: 'nowrap',
+            fontSize: 13,
+            fontWeight: 500,
+            color: T.textPrimary,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            pointerEvents: 'none',
+          }}>
+            Chat with us
+          </div>
+        )}
+      </div>
+      <style jsx global>{`
+        @keyframes waChatPulse {
+          0% { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  )
+}
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true)
 
@@ -3923,17 +4281,21 @@ export default function LandingPage() {
       <AnimatedSection delay={200}><ProblemSolutionSection /></AnimatedSection>
       <AnimatedSection delay={300}><HowItWorksSection /></AnimatedSection>
       <AnimatedSection delay={400}><DemoSection /></AnimatedSection>
-      <AnimatedSection delay={500}><FeaturesSection /></AnimatedSection>
-      <AnimatedSection delay={600}><ComparisonSection /></AnimatedSection>
-      <AnimatedSection delay={700}><CTABanner /></AnimatedSection>
-      <AnimatedSection delay={800}><RestaurantShowcaseSection /></AnimatedSection>
-      <AnimatedSection delay={900}><PricingSection /></AnimatedSection>
-      <AnimatedSection delay={1000}><TestimonialsSection /></AnimatedSection>
-      <AnimatedSection delay={1100}><StatsCounterSection /></AnimatedSection>
-      <AnimatedSection delay={1200}><FAQSection /></AnimatedSection>
-      <AnimatedSection delay={1300}><InquiryForm /></AnimatedSection>
-      <AnimatedSection delay={1400}><FooterSection /></AnimatedSection>
+      <AnimatedSection delay={500}><HowWereDifferentSection /></AnimatedSection>
+      <AnimatedSection delay={600}><FeaturesSection /></AnimatedSection>
+      <AnimatedSection delay={700}><ComparisonSection /></AnimatedSection>
+      <AnimatedSection delay={800}><RiskFreeGuaranteeSection /></AnimatedSection>
+      <AnimatedSection delay={900}><CTABanner /></AnimatedSection>
+      <AnimatedSection delay={1000}><RestaurantShowcaseSection /></AnimatedSection>
+      <AnimatedSection delay={1100}><PricingSection /></AnimatedSection>
+      <AnimatedSection delay={1200}><TestimonialsSection /></AnimatedSection>
+      <AnimatedSection delay={1250}><SuccessStoriesCarousel /></AnimatedSection>
+      <AnimatedSection delay={1300}><StatsCounterSection /></AnimatedSection>
+      <AnimatedSection delay={1400}><FAQSection /></AnimatedSection>
+      <AnimatedSection delay={1500}><InquiryForm /></AnimatedSection>
+      <AnimatedSection delay={1600}><FooterSection /></AnimatedSection>
       <ScrollToTopButton />
+      <LiveChatWidget />
       <CookieConsent />
 
       <style jsx global>{`

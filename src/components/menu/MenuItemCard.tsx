@@ -70,7 +70,7 @@ export default function MenuItemCard({
 
         {/* Bestseller badge */}
         {is_best_seller && (
-          <span className="menu-badge-best">★ Best</span>
+          <span className="menu-badge-best">🏆 Bestseller</span>
         )}
 
         {/* Sold out overlay */}

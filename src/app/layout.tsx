@@ -40,8 +40,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${dmSans.variable} ${dmMono.variable} ${fraunces.variable}`}>
       <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      <body className="antialiased font-body">
-        {children}
+      <body className="antialiased font-body min-h-screen flex flex-col">
+        <div className="flex-1">{children}</div>
         <Toaster
           position="bottom-center"
           toastOptions={{

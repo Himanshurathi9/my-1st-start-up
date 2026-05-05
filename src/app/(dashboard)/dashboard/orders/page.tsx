@@ -241,7 +241,7 @@ function OrderCard({
 
   return (
     <div
-      className="dash-card"
+      className={`dash-card ${status === 'NEW' ? 'animate-dash-new-order-pulse' : ''}`}
       style={{
         margin: '0 16px 12px',
         padding: 0,
@@ -424,7 +424,9 @@ function OrderCard({
                 border: 'none',
                 cursor: 'pointer',
                 minWidth: 44,
-                transition: 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'all 200ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                opacity: updating ? 0.7 : 1,
+                transform: updating ? 'scale(0.96)' : 'scale(1)',
               }}
             >
               {updating ? (
@@ -447,6 +449,7 @@ function OrderCard({
                 fontWeight: 600,
                 background: 'rgba(34,197,94,0.08)',
                 color: '#4ade80',
+                transition: 'all 200ms var(--ease-smooth)',
               }}
             >
               ✓ Completed

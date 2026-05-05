@@ -23,14 +23,25 @@ import {
   Phone,
   Globe,
   ExternalLink,
-  DownloadCloud,
   Palette,
   Check,
   Sparkles,
   Gift,
+  UtensilsCrossed,
+  Clock,
+  Bell,
+  Mail,
+  Volume2,
+  Copy,
+  Download,
+  ShieldAlert,
+  RotateCcw,
+  Pencil,
+  Save,
+  X,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
-import type { Restaurant, RestaurantTable, StampSettings, Customer, ThemeName } from '@/types'
+import type { Restaurant, RestaurantTable, StampSettings, Customer } from '@/types'
 import { handleImgError } from '@/lib/utils'
 
 // ────────────────────────────
@@ -58,6 +69,53 @@ interface ThemeOption {
     textColor: string
     accent: string
     subtitleColor: string
+  }
+}
+
+// ────────────────────────────
+// Constants for new sections
+// ────────────────────────────
+
+const CUISINE_OPTIONS = ['Indian', 'Chinese', 'Italian', 'Mexican', 'Continental', 'Multi-Cuisine', 'Other']
+
+const MENU_DISPLAY_THEMES = [
+  { id: 'dark', label: 'Dark' },
+  { id: 'light', label: 'Light' },
+  { id: 'warm', label: 'Warm' },
+]
+
+const LANGUAGE_OPTIONS = ['English', 'Hindi', 'Gujarati']
+
+const CURRENCY_OPTIONS = [
+  { value: 'INR', label: '₹ INR' },
+  { value: 'USD', label: '$ USD' },
+]
+
+const QR_SIZES = [
+  { id: 'small', label: 'Small', px: 80 },
+  { id: 'medium', label: 'Medium', px: 120 },
+  { id: 'large', label: 'Large', px: 180 },
+]
+
+const DEFAULT_NOTIFICATION_PREFS = {
+  newOrder: true,
+  dailySummary: false,
+  soundAlerts: true,
+}
+
+const DEFAULT_DISPLAY_PREFS = {
+  menuTheme: 'dark',
+  language: 'English',
+  currency: 'INR',
+}
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const stored = localStorage.getItem(key)
+    return stored ? JSON.parse(stored) : fallback
+  } catch {
+    return fallback
   }
 }
 
@@ -126,9 +184,9 @@ function SectionLabel({ children, badge }: { children: React.ReactNode; badge?: 
 // Section Card Component
 // ────────────────────────────
 
-function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function SectionCard({ children, className = '', style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={`dash-card overflow-hidden ${className}`}>
+    <div className={`dash-card overflow-hidden ${className}`} style={style}>
       {children}
     </div>
   )
@@ -269,6 +327,55 @@ function ThemePreviewCard({
 // Dark Toggle Component
 // ────────────────────────────
 
+// ────────────────────────────
+// Dropdown Select Component
+// ────────────────────────────
+
+function DropdownSelect({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: string
+  onChange: (val: string) => void
+  options: readonly string[] | { value: string; label: string }[]
+  label: string
+}) {
+  const optionLabels = typeof options[0] === 'string'
+    ? (options as string[]).map(o => ({ value: o, label: o }))
+    : (options as { value: string; label: string }[])
+
+  return (
+    <div className="relative">
+      {label && (
+        <label className="block text-[11px] font-semibold mb-1.5" style={{ color: 'var(--dash-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="dash-input w-full rounded-xl appearance-none cursor-pointer pr-10 text-sm"
+          style={{ paddingLeft: '14px', paddingRight: '40px', paddingTop: '10px', paddingBottom: '10px', fontSize: '14px' }}
+        >
+          {optionLabels.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--dash-text-3)' }} />
+      </div>
+    </div>
+  )
+}
+
+// ────────────────────────────
+// Dark Toggle Component
+// ────────────────────────────
+
 function DashToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
   return (
     <button
@@ -343,6 +450,24 @@ export default function SettingsPage() {
   const [themeSaving, setThemeSaving] = useState(false)
   const [whatsappNumber, setWhatsappNumber] = useState('')
   const [whatsappSaving, setWhatsappSaving] = useState(false)
+
+  // ─── Profile section state ───
+  const [editProfileName, setEditProfileName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editCuisineType, setEditCuisineType] = useState('')
+  const [profileEditing, setProfileEditing] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+
+  // ─── Notification preferences state ───
+  const [notifPrefs, setNotifPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
+
+  // ─── Display settings state ───
+  const [menuDisplayTheme, setMenuDisplayTheme] = useState('dark')
+  const [language, setLanguage] = useState('English')
+  const [currency, setCurrency] = useState('INR')
+
+  // ─── QR size state ───
+  const [qrSize, setQrSize] = useState('medium')
 
   const hasTables = data && data.tables.length > 0
   const maxTables = data?.restaurant.plan === 'BASIC' ? 10 : 30
@@ -447,7 +572,122 @@ export default function SettingsPage() {
     if (data?.restaurant?.theme) {
       setSelectedTheme(data.restaurant.theme)
     }
+    // Sync profile fields from data
+    if (data?.restaurant?.name) {
+      setEditProfileName(data.restaurant.name)
+    }
+    if (data?.restaurant?.description) {
+      setEditDescription(data.restaurant.description)
+    }
+    if (data?.restaurant?.cuisine_type) {
+      setEditCuisineType(data.restaurant.cuisine_type)
+    }
   }, [data])
+
+  // ─── Load localStorage preferences on mount ───
+  useEffect(() => {
+    const storedNotif = loadFromStorage('menumate-notif-prefs', DEFAULT_NOTIFICATION_PREFS)
+    setNotifPrefs(storedNotif)
+
+    const storedDisplay = loadFromStorage('menumate-display-prefs', DEFAULT_DISPLAY_PREFS)
+    setMenuDisplayTheme(storedDisplay.menuTheme)
+    setLanguage(storedDisplay.language)
+    setCurrency(storedDisplay.currency)
+
+    const storedQrSize = loadFromStorage('menumate-qr-size', 'medium')
+    setQrSize(storedQrSize)
+  }, [])
+
+  // ─── Save notification prefs to localStorage ───
+  const updateNotifPref = useCallback((key: 'newOrder' | 'dailySummary' | 'soundAlerts', val: boolean) => {
+    const updated = { ...notifPrefs, [key]: val }
+    setNotifPrefs(updated)
+    localStorage.setItem('menumate-notif-prefs', JSON.stringify(updated))
+    toast.success('Notification preference saved')
+  }, [notifPrefs])
+
+  // ─── Save display prefs to localStorage ───
+  const saveDisplayPrefs = useCallback((key: string, val: string) => {
+    let updated: typeof DEFAULT_DISPLAY_PREFS = DEFAULT_DISPLAY_PREFS
+    updated = { ...DEFAULT_DISPLAY_PREFS, menuTheme: menuDisplayTheme, language, currency }
+    updated = { ...updated, [key]: val }
+    setMenuDisplayTheme(updated.menuTheme)
+    setLanguage(updated.language)
+    setCurrency(updated.currency)
+    localStorage.setItem('menumate-display-prefs', JSON.stringify(updated))
+    toast.success('Display preference saved')
+  }, [menuDisplayTheme, language, currency])
+
+  // ─── Save QR size to localStorage ───
+  const updateQrSize = useCallback((size: string) => {
+    setQrSize(size)
+    localStorage.setItem('menumate-qr-size', JSON.stringify(size))
+  }, [])
+
+  // ─── Profile save handler ───
+  const handleSaveProfile = useCallback(async () => {
+    setProfileSaving(true)
+    try {
+      const res = await fetch('/api/restaurant', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editProfileName.trim(),
+          description: editDescription.trim(),
+          cuisine_type: editCuisineType,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to save profile')
+      }
+      toast.success('Restaurant profile updated!')
+      setProfileEditing(false)
+      fetchTables() // re-fetch to keep data in sync
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save profile'
+      toast.error(msg)
+    } finally {
+      setProfileSaving(false)
+    }
+  }, [editProfileName, editDescription, editCuisineType, fetchTables])
+
+  // ─── Copy QR link ───
+  const handleCopyQrLink = useCallback(() => {
+    const slug = data?.restaurant?.slug
+    if (slug) {
+      const link = `${window.location.origin}/menu/${slug}`
+      navigator.clipboard.writeText(link).then(() => {
+        toast.success('QR link copied to clipboard!')
+      }).catch(() => {
+        toast.error('Failed to copy link')
+      })
+    }
+  }, [data])
+
+  // ─── Download QR as PNG ───
+  const handleDownloadQr = useCallback((url: string, filename: string) => {
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [])
+
+  // ─── Reset settings ───
+  const handleResetSettings = useCallback(() => {
+    localStorage.removeItem('menumate-notif-prefs')
+    localStorage.removeItem('menumate-display-prefs')
+    localStorage.removeItem('menumate-qr-size')
+    setNotifPrefs(DEFAULT_NOTIFICATION_PREFS)
+    setMenuDisplayTheme(DEFAULT_DISPLAY_PREFS.menuTheme)
+    setLanguage(DEFAULT_DISPLAY_PREFS.language)
+    setCurrency(DEFAULT_DISPLAY_PREFS.currency)
+    setQrSize('medium')
+    toast.success('All settings reset to defaults')
+  }, [])
 
   // ─── WhatsApp handler ───
   const handleSaveWhatsapp = useCallback(async () => {
@@ -652,6 +892,157 @@ export default function SettingsPage() {
       </header>
 
       <div className="px-3 sm:px-4 pb-[100px]">
+        {/* ═══ SECTION 0 — RESTAURANT PROFILE ═══ */}
+        <section className="mt-5 animate-dash-section-enter" style={{ animationDelay: '0ms' }}>
+          <SectionLabel>
+            <span className="flex items-center gap-2">
+              Restaurant Profile
+              <UtensilsCrossed className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
+            </span>
+          </SectionLabel>
+
+          <SectionCard>
+            {/* Restaurant Name */}
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--dash-border)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center flex-shrink-0"
+                    style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)' }}
+                  >
+                    <Store className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-info)' }} />
+                  </div>
+                  <label className="text-[11px] font-semibold" style={{ color: 'var(--dash-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Restaurant Name
+                  </label>
+                </div>
+                <button
+                  onClick={() => profileEditing ? setProfileEditing(false) : setProfileEditing(true)}
+                  className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg animate-btn-press"
+                  style={{ background: profileEditing ? 'var(--dash-surface-3)' : 'transparent', color: 'var(--dash-text-3)' }}
+                >
+                  {profileEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </button>
+              </div>
+              {profileEditing ? (
+                <input
+                  type="text"
+                  value={editProfileName}
+                  onChange={(e) => setEditProfileName(e.target.value)}
+                  placeholder="Your restaurant name"
+                  className="dash-input rounded-xl text-sm w-full"
+                  style={{ paddingLeft: '14px', paddingRight: '14px', paddingTop: '10px', paddingBottom: '10px', fontSize: '15px', fontWeight: 600 }}
+                />
+              ) : (
+                <p className="text-[15px] font-semibold" style={{ color: 'var(--dash-text)', paddingLeft: '36px' }}>
+                  {editProfileName || data?.restaurant?.name || 'Not set'}
+                </p>
+              )}
+            </div>
+
+            {/* Description / Tagline */}
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--dash-border)' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(168,85,247,0.15)' }}
+                >
+                  <Sparkles className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-special)' }} />
+                </div>
+                <label className="text-[11px] font-semibold" style={{ color: 'var(--dash-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Description / Tagline
+                </label>
+              </div>
+              {profileEditing ? (
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="e.g. Authentic Italian cuisine with a modern twist"
+                  rows={2}
+                  className="dash-input rounded-xl text-sm w-full resize-none"
+                  style={{ paddingLeft: '14px', paddingRight: '14px', paddingTop: '10px', paddingBottom: '10px', fontSize: '14px' }}
+                />
+              ) : (
+                <p className="text-[13px] leading-relaxed" style={{ color: 'var(--dash-text-2)', paddingLeft: '36px' }}>
+                  {editDescription || data?.restaurant?.description || 'No description added yet'}
+                </p>
+              )}
+            </div>
+
+            {/* Cuisine Type */}
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--dash-border)' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)' }}
+                >
+                  <UtensilsCrossed className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-accent)' }} />
+                </div>
+                <label className="text-[11px] font-semibold" style={{ color: 'var(--dash-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Cuisine Type
+                </label>
+              </div>
+              {profileEditing ? (
+                <DropdownSelect
+                  value={editCuisineType}
+                  onChange={setEditCuisineType}
+                  options={CUISINE_OPTIONS}
+                  label=""
+                />
+              ) : (
+                <div className="flex items-center gap-2" style={{ paddingLeft: '36px' }}>
+                  <span className="dash-badge text-[12px] font-semibold px-2.5 py-1 rounded-full" style={{
+                    background: 'rgba(34,197,94,0.12)',
+                    color: 'var(--dash-accent)',
+                  }}>
+                    {editCuisineType || data?.restaurant?.cuisine_type || 'Not set'}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Opening Hours Display */}
+            <div style={{ padding: '14px 16px', borderBottom: profileEditing ? '1px solid var(--dash-border)' : 'none' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245,158,11,0.15)' }}
+                >
+                  <Clock className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-warning)' }} />
+                </div>
+                <label className="text-[11px] font-semibold" style={{ color: 'var(--dash-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Opening Hours
+                </label>
+              </div>
+              <div style={{ paddingLeft: '36px' }}>
+                <p className="text-[13px] font-medium" style={{ color: 'var(--dash-text-2)' }}>
+                  {data?.restaurant?.opening_hours || '9:00 AM – 11:00 PM'}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                  Configured via restaurant admin
+                </p>
+              </div>
+            </div>
+
+            {/* Save Profile Button */}
+            {profileEditing && (
+              <div style={{ padding: '14px 16px' }}>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={profileSaving}
+                  className="dash-btn-primary w-full min-h-[44px] animate-btn-press rounded-xl font-bold text-[14px] flex items-center justify-center gap-2"
+                >
+                  {profileSaving ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                  ) : (
+                    <><Save className="w-4 h-4" /> Save Profile</>
+                  )}
+                </button>
+              </div>
+            )}
+          </SectionCard>
+        </section>
+
         {/* ═══ SECTION 1 — RESTAURANT INFO ═══ */}
         <section className="mt-5 animate-dash-section-enter" style={{ animationDelay: '0ms' }}>
           <SectionLabel>Restaurant Info</SectionLabel>
@@ -749,6 +1140,125 @@ export default function SettingsPage() {
               <span className="text-xs font-semibold" style={{ color: 'var(--dash-text-2)' }}>
                 {THEMES.find(t => t.id === selectedTheme)?.name || 'Dark Luxury'} theme active
               </span>
+            </div>
+          </SectionCard>
+        </section>
+
+        {/* ═══ SECTION 2b — NOTIFICATION PREFERENCES ═══ */}
+        <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '90ms' }}>
+          <SectionLabel>
+            <span className="flex items-center gap-2">
+              Notifications
+              <Bell className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
+            </span>
+          </SectionLabel>
+
+          <SectionCard>
+            {/* New Order Notifications */}
+            <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px', borderBottom: '1px solid var(--dash-border)' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)' }}
+                >
+                  <Bell className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-accent)' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
+                    New Order Notifications
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                    Get notified when a new order arrives
+                  </p>
+                </div>
+              </div>
+              <DashToggle active={notifPrefs.newOrder} onToggle={() => updateNotifPref('newOrder', !notifPrefs.newOrder)} />
+            </div>
+
+            {/* Daily Summary Email */}
+            <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px', borderBottom: '1px solid var(--dash-border)' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)' }}
+                >
+                  <Mail className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-info)' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
+                    Daily Summary Email
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                    Receive a daily report of all orders
+                  </p>
+                </div>
+              </div>
+              <DashToggle active={notifPrefs.dailySummary} onToggle={() => updateNotifPref('dailySummary', !notifPrefs.dailySummary)} />
+            </div>
+
+            {/* Sound Alerts */}
+            <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245,158,11,0.15)' }}
+                >
+                  <Volume2 className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-warning)' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
+                    Sound Alerts
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                    Play a sound for new orders
+                  </p>
+                </div>
+              </div>
+              <DashToggle active={notifPrefs.soundAlerts} onToggle={() => updateNotifPref('soundAlerts', !notifPrefs.soundAlerts)} />
+            </div>
+          </SectionCard>
+        </section>
+
+        {/* ═══ SECTION 2c — DISPLAY PREFERENCES ═══ */}
+        <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '110ms' }}>
+          <SectionLabel>
+            <span className="flex items-center gap-2">
+              Display Settings
+              <Palette className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
+            </span>
+          </SectionLabel>
+
+          <SectionCard className="p-4">
+            <div className="space-y-4">
+              {/* Default Menu Theme */}
+              <div>
+                <DropdownSelect
+                  value={menuDisplayTheme}
+                  onChange={(val) => saveDisplayPrefs('menuTheme', val)}
+                  options={MENU_DISPLAY_THEMES.map(t => ({ value: t.id, label: t.label }))}
+                  label="Default Menu Theme"
+                />
+              </div>
+
+              {/* Language Preference */}
+              <div>
+                <DropdownSelect
+                  value={language}
+                  onChange={(val) => saveDisplayPrefs('language', val)}
+                  options={LANGUAGE_OPTIONS}
+                  label="Language"
+                />
+              </div>
+
+              {/* Currency Format */}
+              <div>
+                <DropdownSelect
+                  value={currency}
+                  onChange={(val) => saveDisplayPrefs('currency', val)}
+                  options={CURRENCY_OPTIONS}
+                  label="Currency Format"
+                />
+              </div>
             </div>
           </SectionCard>
         </section>
@@ -1111,6 +1621,56 @@ export default function SettingsPage() {
         <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '180ms' }}>
           <SectionLabel>QR Codes</SectionLabel>
 
+          {/* QR Size Selector + Copy Link Bar */}
+          {hasTables && (
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-1">
+                {QR_SIZES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => updateQrSize(s.id)}
+                    className="animate-btn-press"
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: qrSize === s.id ? 'var(--dash-gradient)' : 'var(--dash-surface-2)',
+                      color: qrSize === s.id ? '#fff' : 'var(--dash-text-3)',
+                      boxShadow: qrSize === s.id ? '0 2px 8px rgba(34,197,94,0.25)' : 'none',
+                      transition: 'all 150ms',
+                      minWidth: '44px',
+                      minHeight: '36px',
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleCopyQrLink}
+                className="flex items-center gap-1.5 animate-btn-press"
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  background: 'var(--dash-surface-2)',
+                  color: 'var(--dash-text-2)',
+                  border: '1px solid var(--dash-border)',
+                  cursor: 'pointer',
+                  transition: 'all 150ms',
+                  minHeight: '36px',
+                }}
+              >
+                <Copy className="w-3 h-3" />
+                Copy Link
+              </button>
+            </div>
+          )}
+
           <SectionCard>
             {/* Tables Configured Row */}
             <SettingsRow
@@ -1339,9 +1899,28 @@ export default function SettingsPage() {
                   src={data.masterQrUrl}
                   alt="Walk-in QR Code"
                   className="rounded-xl"
-                  style={{ width: '120px', height: '120px', padding: '8px', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+                  style={{ width: QR_SIZES.find(s => s.id === qrSize)?.px || 120, height: QR_SIZES.find(s => s.id === qrSize)?.px || 120, padding: '8px', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
                   onError={handleImgError}
                 />
+                {/* Download Master QR Button */}
+                <button
+                  onClick={() => handleDownloadQr(data.masterQrUrl!, 'master-qr.png')}
+                  className="mt-2 flex items-center gap-1.5 no-underline animate-btn-press"
+                  style={{
+                    background: 'var(--dash-surface-2)',
+                    borderRadius: '100px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--dash-text-2)',
+                    border: '1px solid var(--dash-border)',
+                    cursor: 'pointer',
+                    minHeight: '44px',
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download as PNG
+                </button>
                 <p className="text-[15px] font-bold mt-3" style={{ color: 'var(--dash-text)' }}>
                   Walk-in / Takeaway
                 </p>
@@ -1377,8 +1956,8 @@ export default function SettingsPage() {
                           className="rounded-xl transition-all duration-200"
                           style={{
                             background: 'var(--dash-surface-2)',
-                            width: isExpanded ? '100%' : '100px',
-                            height: isExpanded ? 'auto' : '100px',
+                            width: isExpanded ? '100%' : (QR_SIZES.find(s => s.id === qrSize)?.px || 100),
+                            height: isExpanded ? 'auto' : (QR_SIZES.find(s => s.id === qrSize)?.px || 100),
                             objectFit: 'contain',
                             borderRadius: '8px',
                           }}
@@ -1400,28 +1979,26 @@ export default function SettingsPage() {
                       </span>
                     </div>
 
-                    {/* Download button when expanded */}
-                    {isExpanded && table.qr_code_url && (
-                      <a
-                        href={table.qr_code_url}
-                        download={`table-${table.table_number}-qr.png`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 flex items-center gap-1.5 no-underline"
+                    {/* Download button — always visible */}
+                    {table.qr_code_url && (
+                      <button
+                        onClick={() => handleDownloadQr(table.qr_code_url!, `table-${table.table_number}-qr.png`)}
+                        className="mt-2 flex items-center gap-1.5 no-underline animate-btn-press"
                         style={{
                           background: 'var(--dash-surface-2)',
                           borderRadius: '100px',
-                          padding: '8px 16px',
-                          fontSize: '13px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
                           fontWeight: 600,
                           color: 'var(--dash-text-2)',
                           border: '1px solid var(--dash-border)',
+                          cursor: 'pointer',
+                          minHeight: '36px',
                         }}
-                        onClick={(e) => e.stopPropagation()}
                       >
-                        <DownloadCloud className="w-3.5 h-3.5" />
-                        Save QR
-                      </a>
+                        <Download className="w-3 h-3" />
+                        Download
+                      </button>
                     )}
                   </div>
                 )
@@ -1430,8 +2007,87 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* ═══ SECTION 5 — ACCOUNT ═══ */}
-        <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '240ms' }}>
+        {/* ═══ SECTION 5 — DANGER ZONE ═══ */}
+        <section className="mt-8 animate-dash-section-enter" style={{ animationDelay: '240ms' }}>
+          <SectionLabel>
+            <span className="flex items-center gap-2" style={{ color: 'var(--dash-error)' }}>
+              Danger Zone
+              <ShieldAlert className="w-3 h-3" style={{ color: 'var(--dash-error)' }} />
+            </span>
+          </SectionLabel>
+
+          <SectionCard style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
+            {/* Delete Account Row */}
+            <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px', borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(239,68,68,0.15)' }}
+                >
+                  <Trash2 className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-error)' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
+                    Delete Account
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                    Permanently delete your restaurant account
+                  </p>
+                </div>
+              </div>
+              <button
+                disabled
+                title="Contact support to delete"
+                className="min-h-[44px] px-4 rounded-xl font-bold text-[13px] animate-btn-press"
+                style={{
+                  background: 'rgba(239,68,68,0.1)',
+                  color: 'rgba(239,68,68,0.5)',
+                  border: '1px solid rgba(239,68,68,0.15)',
+                  cursor: 'not-allowed',
+                  opacity: 0.6,
+                }}
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* Reset Settings Row */}
+            <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245,158,11,0.15)' }}
+                >
+                  <RotateCcw className="w-[14px] h-[14px] flex-shrink-0" style={{ color: 'var(--dash-warning)' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
+                    Reset Settings
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
+                    Clear all saved preferences to defaults
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleResetSettings}
+                className="min-h-[44px] px-4 rounded-xl font-bold text-[13px] animate-btn-press flex items-center gap-1.5"
+                style={{
+                  background: 'rgba(245,158,11,0.1)',
+                  color: 'var(--dash-warning)',
+                  border: '1px solid rgba(245,158,11,0.2)',
+                  cursor: 'pointer',
+                }}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset
+              </button>
+            </div>
+          </SectionCard>
+        </section>
+
+        {/* ═══ SECTION 6 — ACCOUNT ═══ */}
+        <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '260ms' }}>
           <SectionLabel>Account</SectionLabel>
 
           <SectionCard>

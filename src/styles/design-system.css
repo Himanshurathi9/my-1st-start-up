@@ -1398,6 +1398,11 @@ body {
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--dash-border);
+  transition: border-color 300ms var(--ease-smooth), box-shadow 300ms var(--ease-smooth);
+}
+.dash-glass.dash-glass-scrolled {
+  border-bottom-color: rgba(255,255,255,0.1);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
 }
 
 .dash-glass-light {
@@ -1413,7 +1418,8 @@ body {
   border: 1px solid var(--dash-border);
   border-radius: var(--dash-radius-card);
   box-shadow: var(--dash-shadow-card);
-  transition: transform 200ms var(--ease-smooth), box-shadow 200ms var(--ease-smooth), border-color 200ms var(--ease-smooth);
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms var(--ease-smooth), border-color 250ms var(--ease-smooth);
+  will-change: transform;
 }
 .dash-card:hover {
   transform: translateY(-2px);
@@ -1422,6 +1428,7 @@ body {
 }
 .dash-card:active {
   transform: translateY(0) scale(0.99);
+  transition-duration: 100ms;
 }
 
 /* ── Dashboard Card with Gradient Top ── */
@@ -1554,7 +1561,7 @@ body {
   width: 52px;
   height: 28px;
   border-radius: 14px;
-  transition: background-color 200ms var(--ease-spring);
+  transition: background-color 250ms var(--ease-spring), box-shadow 300ms var(--ease-smooth);
   cursor: pointer;
   background: var(--dash-surface-3);
 }
@@ -1571,10 +1578,12 @@ body {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  transition: transform 200ms var(--ease-spring);
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 250ms var(--ease-smooth);
+  will-change: transform;
 }
 .dash-toggle-track-on .dash-toggle-thumb {
   transform: translateX(24px);
+  box-shadow: 0 1px 6px rgba(34,197,94,0.3);
 }
 
 /* ── Dashboard Section Label ── */
@@ -1585,6 +1594,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 0 4px;
+  transition: color 200ms var(--ease-smooth);
 }
 
 /* ── Dashboard Separator ── */
@@ -1599,11 +1609,11 @@ body {
   background: linear-gradient(
     90deg,
     var(--dash-surface-2) 25%,
-    var(--dash-surface-3) 50%,
-    var(--dash-surface-2) 75%
+    var(--dash-surface-3) 37%,
+    var(--dash-surface-2) 63%
   );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  background-size: 400% 100%;
+  animation: dash-skeleton-shimmer 1.8s ease-in-out infinite;
   border-radius: 12px;
 }
 
@@ -1657,12 +1667,13 @@ body {
   position: absolute;
   bottom: -2px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleX(0);
   width: 16px;
   height: 3px;
   border-radius: 2px;
   background: var(--dash-accent);
   box-shadow: 0 0 8px rgba(34,197,94,0.5);
+  animation: dash-nav-indicator-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* ── Dashboard Nav Responsive (320px-480px) ── */
@@ -1712,7 +1723,24 @@ body {
   height: 100%;
   border-radius: 3px;
   background: var(--dash-gradient);
-  transition: width 500ms var(--ease-out);
+  transition: width 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.dash-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.25) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: dash-progress-shimmer 2s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1765,6 +1793,69 @@ body {
     opacity: 1;
     transform: translateX(0) scale(1);
   }
+}
+
+/* Dashboard card stagger entrance — fade up */
+@keyframes dashCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Dashboard skeleton custom shimmer — slower, smoother sweep */
+@keyframes dash-skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Dashboard progress bar shimmer sweep */
+@keyframes dash-progress-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Dashboard nav active indicator scale in */
+@keyframes dash-nav-indicator-in {
+  from { transform: translateX(-50%) scaleX(0); }
+  to { transform: translateX(-50%) scaleX(1); }
+}
+
+/* Dashboard nav icon bounce on tap */
+@keyframes dash-nav-icon-bounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* Dashboard new order pulse — glow ring */
+@keyframes dash-new-order-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: var(--dash-shadow-card), 0 0 0 0 rgba(239, 68, 68, 0.2);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: var(--dash-shadow-card), 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+/* Dashboard gradient border for "open for orders" card */
+@keyframes dash-gradient-border-spin {
+  0% { --dash-border-angle: 0deg; }
+  100% { --dash-border-angle: 360deg; }
+}
+
+/* Dashboard badge entrance pop */
+@keyframes dash-badge-pop {
+  0% { opacity: 0; transform: scale(0.5) translateY(4px); }
+  60% { opacity: 1; transform: scale(1.1) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* Dashboard toggle glow animation */
@@ -1827,4 +1918,96 @@ body {
 
 .animate-dash-neon-border {
   animation: dash-neon-border 3s ease-in-out infinite;
+}
+
+/* ── Dashboard Card Entrance Utility ── */
+.animate-dash-card-enter {
+  animation: dashCardEnter 350ms var(--ease-out) both;
+}
+
+/* ── Dashboard Nav Icon Bounce ── */
+.animate-dash-nav-bounce {
+  animation: dash-nav-icon-bounce 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Dashboard New Order Pulse ── */
+.animate-dash-new-order-pulse {
+  animation: dash-new-order-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Dashboard Badge Pop ── */
+.animate-dash-badge-pop {
+  animation: dash-badge-pop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Dashboard Gradient Border Card (for "open for orders") ── */
+.dash-card-gradient-border {
+  position: relative;
+  overflow: hidden;
+  border: none;
+}
+.dash-card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--dash-radius-card);
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--dash-border-angle, 0deg),
+    rgba(34,197,94,0.6),
+    rgba(16,185,129,0.2),
+    rgba(5,150,105,0.6),
+    rgba(34,197,94,0.2),
+    rgba(34,197,94,0.6)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: dash-gradient-border-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Dashboard Noise Texture Overlay ── */
+.dash-noise-bg {
+  position: relative;
+}
+.dash-noise-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  animation: grain-shift 8s steps(10) infinite;
+  mix-blend-mode: overlay;
+}
+
+/* ── Dashboard Badge Hover Micro-transition ── */
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+  transition: transform 200ms var(--ease-spring), box-shadow 200ms var(--ease-smooth);
+}
+.dash-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ── Dashboard Active Tab Glow ── */
+.dash-nav-item-active {
+  color: var(--dash-accent);
+  background: rgba(34,197,94,0.1);
+  box-shadow: 0 0 12px rgba(34,197,94,0.08);
+  transition: color 250ms var(--ease-spring), background 250ms var(--ease-spring), box-shadow 300ms var(--ease-smooth);
 }

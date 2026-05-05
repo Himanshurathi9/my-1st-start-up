@@ -135,9 +135,14 @@ function NavLink({
   children: React.ReactNode
 }) {
   const [pressed, setPressed] = useState(false)
+  const [bouncing, setBouncing] = useState(false)
 
   const handleDown = useCallback(() => setPressed(true), [])
-  const handleUp = useCallback(() => setPressed(false), [])
+  const handleUp = useCallback(() => {
+    setPressed(false)
+    setBouncing(true)
+  }, [])
+  const handleAnimationEnd = useCallback(() => setBouncing(false), [])
 
   return (
     <Link
@@ -145,6 +150,7 @@ function NavLink({
       className={`dash-nav-item ${isActive ? 'dash-nav-item-active' : ''}`}
       style={{
         transform: pressed ? 'scale(0.9)' : 'scale(1)',
+        transition: 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}
       onMouseDown={handleDown}
       onMouseUp={handleUp}
@@ -152,7 +158,16 @@ function NavLink({
       onTouchStart={handleDown}
       onTouchEnd={handleUp}
     >
-      {children}
+      {bouncing ? (
+        <div
+          className={bouncing ? 'animate-dash-nav-bounce' : ''}
+          onAnimationEnd={handleAnimationEnd}
+        >
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </Link>
   )
 }
