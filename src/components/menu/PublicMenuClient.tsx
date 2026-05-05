@@ -227,16 +227,27 @@ export default function PublicMenuClient({
   }, [items, q, activeCategory, foodTypeFilter])
 
   // Group filtered items for display
+  // NOTE: When food type filter is active, we must build groups from `filtered`
+  // (not the original `grouped`) so that food type filtering applies within categories too.
   const displayGroups = useMemo(() => {
+    // Search mode: flat list
     if (q.length > 0) {
       return filtered.length > 0
         ? [{ categoryId: 'search', categoryName: `Results (${filtered.length})`, items: filtered }]
         : []
     }
+
+    // If food type filter is active, re-group the filtered items so category + food type both apply
+    if (foodTypeFilter !== 'all') {
+      const filteredGrouped = groupByCategory(filtered, categories)
+      if (activeCategory === 'all') return filteredGrouped
+      return filteredGrouped.filter((g) => g.categoryId === activeCategory)
+    }
+
+    // No food type filter — use pre-computed grouped (includes all items)
     if (activeCategory === 'all') return grouped
-    const match = grouped.filter((g) => g.categoryId === activeCategory)
-    return match
-  }, [q, filtered, activeCategory, grouped])
+    return grouped.filter((g) => g.categoryId === activeCategory)
+  }, [q, filtered, activeCategory, grouped, foodTypeFilter, categories])
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0)
   const cartTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0)
