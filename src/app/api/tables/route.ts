@@ -106,6 +106,9 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const menuUrl = `${baseUrl}/menu/${restaurant.slug}`
 
+    console.log(`[POST /api/tables] Generating ${count} QR codes for restaurant: ${restaurant.name} (${restaurant.slug})`)
+    console.log(`[POST /api/tables] Base URL: ${baseUrl}, Menu URL: ${menuUrl}`)
+
     // Delete existing tables and their QR images from Cloudinary
     const { data: existingTables } = await supabaseAdmin.client
       .from('restaurant_tables')
@@ -142,6 +145,7 @@ export async function POST(request: NextRequest) {
 
     for (let i = 1; i <= count; i++) {
       const tableUrl = `${menuUrl}?table=${i}`
+      console.log(`[POST /api/tables] Generating QR for table ${i}: ${tableUrl}`)
 
       // Generate QR code as data URL
       const qrDataUrl = await QRCode.toDataURL(tableUrl, {

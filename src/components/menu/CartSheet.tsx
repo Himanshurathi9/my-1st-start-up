@@ -152,23 +152,27 @@ export default function CartSheet({
     setPlacing(true)
     setError(null)
 
+    const orderPayload = {
+      restaurant_id: restaurantId,
+      table_number: tableNumber,
+      note: note.trim() || null,
+      items: cart.map((item) => ({
+        menuItemId: item.menuItemId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        foodType: item.foodType,
+      })),
+      total_amount: cartTotal,
+    }
+
+    console.log('[QR] Order payload:', JSON.stringify({ restaurant_id: orderPayload.restaurant_id, table_number: orderPayload.table_number, item_count: orderPayload.items.length, total: orderPayload.total_amount }))
+
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          restaurant_id: restaurantId,
-          table_number: tableNumber,
-          note: note.trim() || null,
-          items: cart.map((item) => ({
-            menuItemId: item.menuItemId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            foodType: item.foodType,
-          })),
-          total_amount: cartTotal,
-        }),
+        body: JSON.stringify(orderPayload),
       })
 
       const data = await res.json()

@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 })
     }
 
-    console.log('[orders POST] restaurantId:', restaurant_id, 'name:', restaurant.name, 'whatsapp:', restaurant.whatsapp_number || '(none)')
+    console.log('[orders POST] restaurantId:', restaurant_id, 'name:', restaurant.name, 'whatsapp:', restaurant.whatsapp_number || '(none)', '| table_number:', table_number, '| items:', items.length, '| total:', total_amount)
 
     if (!restaurant.is_open) {
       return NextResponse.json({ error: 'Restaurant is currently closed' }, { status: 400 })

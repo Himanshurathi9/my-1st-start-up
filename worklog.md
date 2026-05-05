@@ -1542,3 +1542,65 @@ Stage Summary:
 6. Performance optimization (image lazy loading, code splitting)
 7. Accessibility audit (full ARIA labels, keyboard navigation)
 8. Implement actual backend for settings (profile save, notifications)
+
+---
+Task ID: 15
+Agent: Main Agent
+Task: Fix QR code generation and scanning system — end-to-end table number flow
+
+Work Log:
+- **ANALYSIS**: Thoroughly reviewed the entire QR code data flow across 8 files:
+  - `/api/tables/route.ts` (QR generation API)
+  - `/api/tables/print/route.ts` (print-ready HTML)
+  - `/menu/[slug]/page.tsx` (menu server component — reads ?table= param)
+  - `PublicMenuClient.tsx` (menu client — displays table, manages cart)
+  - `CartSheet.tsx` (order submission — sends table_number)
+  - `/api/orders/route.ts` (order creation — stores table_number)
+  - Settings page (QR management UI)
+  - `lib/env.ts`, `lib/cloudinary.ts`, `lib/qrcode.ts`
+
+- **FINDING 1 — QR Generation Logic Was Correct**: The URL construction `${baseUrl}/menu/${slug}?table=${N}` was properly implemented. QR codes encoded correct URLs with table numbers. No fix needed for generation logic.
+
+- **FINDING 2 — Menu Page Table Detection Was Correct**: The server component correctly parsed `searchParams.table` into an integer and passed it to the client component. No fix needed for param reading.
+
+- **FINDING 3 — Order Submission Was Correct**: CartSheet correctly sent `table_number` in the order payload, and the API correctly stored it.
+
+- **BUG 1 — No Table Number Persistence**: Table number from QR scan was NOT persisted to localStorage. If the user refreshed the page or navigated away and back, the table number was lost. Fixed by adding `saveTableNumber()` / `loadTableNumber()` helpers and `activeTableNumber` state initialized from URL param > localStorage > null.
+
+- **BUG 2 — No Manual Table Fallback**: When no QR code was scanned (direct URL access without ?table=), there was NO way for the customer to enter their table number. The order would be placed without any table info. Fixed by adding a manual table number input field that appears when `activeTableNumber` is null and order type is 'dine-in'.
+
+- **BUG 3 — Takeaway Orders Incorrectly Included Table Number**: The `orderType` state ('dine-in' | 'takeaway') existed in PublicMenuClient but was NOT passed to CartSheet. Orders always sent `table_number` regardless of order type. Fixed by passing `orderType === 'dine-in' ? activeTableNumber : null` to CartSheet.
+
+- **BUG 4 — Notifications Used Wrong Table Number**: The waiter/bill notification payload used the raw `tableNumber` prop (from URL only) instead of the `activeTableNumber` (which includes localStorage + manual input). Fixed.
+
+- **IMPROVEMENT 1 — Console Logging for Debugging**: Added comprehensive `[QR]` prefixed logs:
+  - Menu page server: logs slug, table param, and parsed value
+  - PublicMenuClient: logs menu load with source detection (QR scan vs localStorage vs none)
+  - CartSheet: logs order payload before submission
+  - API /api/tables POST: logs restaurant name, slug, base URL, and per-table QR URLs
+  - API /api/orders POST: logs table_number alongside other order details
+
+- **IMPROVEMENT 2 — Clear Table Number Option**: Added "Wrong table? Clear" button for customers who entered a wrong table number manually. Only shows when table number came from localStorage (not QR scan).
+
+- **IMPROVEMENT 3 — Better Table Number Validation**: Added validation for table numbers ≥ 1 (rejects 0 and negative numbers). Manual input limited to 1-100 range.
+
+### Files Modified:
+1. `src/components/menu/PublicMenuClient.tsx` — Added table persistence, manual input, clear button, logging, orderType awareness
+2. `src/components/menu/CartSheet.tsx` — Added order payload logging
+3. `src/app/menu/[slug]/page.tsx` — Added server-side table param logging, cleaner parsing
+4. `src/app/api/tables/route.ts` — Added QR generation logging (per-table URLs, base URL)
+5. `src/app/api/orders/route.ts` — Added table_number to order logging
+
+### Lint Results:
+- Zero errors, zero warnings
+
+Stage Summary:
+- **Root Cause Analysis**: The QR generation code was NOT broken — the URLs, encoding, and data flow were all correct. The real issues were:
+  1. Table number not persisted (lost on refresh)
+  2. No fallback input for customers without QR
+  3. Takeaway orders incorrectly included table number
+  4. No debugging logs to diagnose issues
+- All 4 bugs fixed and 3 improvements applied
+- No UI redesign, layout changes, or styling modifications
+- End-to-end flow now works: QR scan → table detection → localStorage persistence → cart → order with table number
+- Edge cases handled: no table param (manual input), invalid table (rejected), direct URL (localStorage recovery), takeaway (no table number)

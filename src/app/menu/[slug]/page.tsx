@@ -167,13 +167,16 @@ export default async function PublicMenuPage({
 
   // 8. Parse table number
   const tableNumber = table ? parseInt(table, 10) : null
+  const parsedTableNumber = isNaN(tableNumber as number) ? null : tableNumber
+
+  console.log(`[QR] Menu page loaded — slug: ${slug} | table param: "${table || '(none)'}" | parsed: ${parsedTableNumber}`)
 
   return (
     <PublicMenuClient
       restaurant={restaurant as Restaurant}
       categories={(categories || []) as Category[]}
       items={items}
-      tableNumber={isNaN(tableNumber as number) ? null : tableNumber}
+      tableNumber={parsedTableNumber}
       banners={activeBanners as Banner[]}
       defaultTheme={restaurant.theme as string | undefined}
     />

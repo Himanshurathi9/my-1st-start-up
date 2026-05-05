@@ -47,6 +47,7 @@ const cssThemeToLibTheme: Record<string, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────
 const CART_KEY = (slug: string) => `menumate_cart_${slug}`
+const TABLE_KEY = (slug: string) => `menumate_table_${slug}`
 
 function loadCart(slug: string): CartItem[] {
   if (typeof window === 'undefined') return []
@@ -60,6 +61,26 @@ function saveCart(slug: string, cart: CartItem[]) {
   try {
     if (cart.length > 0) localStorage.setItem(CART_KEY(slug), JSON.stringify(cart))
     else localStorage.removeItem(CART_KEY(slug))
+  } catch { /* ignore */ }
+}
+
+function loadTableNumber(slug: string): number | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const s = localStorage.getItem(TABLE_KEY(slug))
+    if (!s) return null
+    const n = parseInt(s, 10)
+    return isNaN(n) || n < 1 ? null : n
+  } catch { return null }
+}
+
+function saveTableNumber(slug: string, table: number | null) {
+  try {
+    if (table != null && table >= 1) {
+      localStorage.setItem(TABLE_KEY(slug), String(table))
+    } else {
+      localStorage.removeItem(TABLE_KEY(slug))
+    }
   } catch { /* ignore */ }
 }
 
@@ -161,9 +182,43 @@ export default function PublicMenuClient({
   const [cartFloatId, setCartFloatId] = useState(0)
   const [cartBadgePulse, setCartBadgePulse] = useState(false)
 
+  // ─── Table number state (from QR param → localStorage → manual input) ──
+  const [manualTableInput, setManualTableInput] = useState('')
+  const [activeTableNumber, setActiveTableNumber] = useState<number | null>(() => {
+    // Priority: URL param (tableNumber prop) > localStorage > null
+    if (tableNumber != null && tableNumber >= 1) return tableNumber
+    return loadTableNumber(restaurant.slug)
+  })
+
   // ─── Debounce guards (prevent double-click double-fire) ─────
   const waiterFiringRef = useRef(false)
   const billFiringRef = useRef(false)
+
+  // ─── Persist table number to localStorage when it changes ────
+  useEffect(() => {
+    if (activeTableNumber != null && activeTableNumber >= 1) {
+      saveTableNumber(restaurant.slug, activeTableNumber)
+      console.log('[QR] Table number persisted:', activeTableNumber, 'for slug:', restaurant.slug)
+    }
+  }, [activeTableNumber, restaurant.slug])
+
+  // ─── Handle manual table number submission ──────────────────
+  const handleManualTableSubmit = useCallback(() => {
+    const val = parseInt(manualTableInput.trim(), 10)
+    if (isNaN(val) || val < 1) {
+      setManualTableInput('')
+      return
+    }
+    setActiveTableNumber(val)
+    setManualTableInput('')
+    console.log('[QR] Manual table number set:', val)
+  }, [manualTableInput])
+
+  // ─── Clear table number (for manual override or session reset) ──
+  const handleClearTableNumber = useCallback(() => {
+    setActiveTableNumber(null)
+    saveTableNumber(restaurant.slug, null)
+  }, [restaurant.slug])
 
   // ─── Fetch stamp settings ───────────────────────────────────
   useEffect(() => {
@@ -306,7 +361,7 @@ export default function PublicMenuClient({
         id: eventId,
         type,
         restaurant_id: restaurant.id,
-        table_number: tableNumber,
+        table_number: orderType === 'dine-in' ? activeTableNumber : null,
         restaurant_name: restaurant.name,
         timestamp,
       }
@@ -359,7 +414,7 @@ export default function PublicMenuClient({
         }
       }, 3000)
     },
-    [restaurant.id, restaurant.name, tableNumber],
+    [restaurant.id, restaurant.name, activeTableNumber, orderType],
   )
 
   // ─── Search ─────────────────────────────────────────────────
@@ -470,7 +525,10 @@ export default function PublicMenuClient({
     }
   }, [q, activeCategory])
 
-  // ─── Item/category counts logged in dev only ──────────────────
+  // ─── Log QR table detection on mount ──────────────────────────
+  useEffect(() => {
+    console.log('[QR] Menu loaded — slug:', restaurant.slug, '| URL table param:', tableNumber, '| Active table:', activeTableNumber, '| Source:', tableNumber != null ? 'QR scan' : (activeTableNumber != null ? 'localStorage' : 'none'))
+  }, [restaurant.slug, tableNumber, activeTableNumber])
 
   // ─── Show stamps tab? ───────────────────────────────────────
   const showStampsTab = !!stampSettings
@@ -714,8 +772,8 @@ export default function PublicMenuClient({
               >
                 <span>🍽️</span>
                 <span>Dine-in</span>
-                {tableNumber != null && (
-                  <span className="order-type-table">Table {tableNumber}</span>
+                {activeTableNumber != null && (
+                  <span className="order-type-table">Table {activeTableNumber}</span>
                 )}
               </button>
               <button
@@ -729,6 +787,77 @@ export default function PublicMenuClient({
           )}
           {orderType === 'takeaway' && !searchOpen && (
             <p className="order-type-hint">Pickup available at restaurant</p>
+          )}
+
+          {/* ═══ 2.5b MANUAL TABLE INPUT (fallback when no QR) ═══ */}
+          {!searchOpen && orderType === 'dine-in' && activeTableNumber == null && (
+            <div style={{
+              padding: '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={manualTableInput}
+                onChange={(e) => setManualTableInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleManualTableSubmit() }}
+                placeholder="Enter your table number"
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  border: '1px solid var(--m-card-border)',
+                  background: 'var(--m-surface)',
+                  color: 'var(--m-text)',
+                  fontSize: 13,
+                  outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleManualTableSubmit}
+                disabled={!manualTableInput.trim()}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: manualTableInput.trim() ? 'var(--m-primary)' : 'var(--m-pill-bg)',
+                  color: manualTableInput.trim() ? 'var(--m-primary-text)' : 'var(--m-text-muted)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: manualTableInput.trim() ? 'pointer' : 'default',
+                }}
+              >
+                Set
+              </button>
+            </div>
+          )}
+
+          {/* ═══ 2.5c CLEAR TABLE NUMBER ═══ */}
+          {!searchOpen && orderType === 'dine-in' && activeTableNumber != null && !tableNumber && (
+            <div style={{
+              padding: '0 16px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <button
+                onClick={handleClearTableNumber}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--m-card-border)',
+                  background: 'none',
+                  color: 'var(--m-text-muted)',
+                  fontSize: 11,
+                  cursor: 'pointer',
+                }}
+              >
+                Wrong table? Clear
+              </button>
+            </div>
           )}
 
           {/* ═══ 2.6 FOOD TYPE FILTER CHIPS ═══ */}
@@ -942,7 +1071,7 @@ export default function PublicMenuClient({
       {cartOpen && (
         <CartSheet
           cart={cart}
-          tableNumber={tableNumber}
+          tableNumber={orderType === 'dine-in' ? activeTableNumber : null}
           restaurantName={restaurant.name}
           restaurantId={restaurant.id}
           slug={restaurant.slug}
