@@ -142,7 +142,8 @@ html {
   overflow-y: auto;
   scroll-behavior: smooth;
   min-height: 100%;
-  /* CRITICAL: height must be 'auto', never '100%' or '100vh' — otherwise page can't scroll */
+  /* CRITICAL: height must be 'auto', never '100%' or '100vh' — otherwise page can't scroll.
+     Tailwind v4 preflight sets height: 100% which is overridden by globals.css */
   height: auto;
 }
 
@@ -161,7 +162,7 @@ body {
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--background);
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: auto;
   /* CRITICAL: body must be scrollable and auto-height */
   overflow-y: auto;
   min-height: 100vh;

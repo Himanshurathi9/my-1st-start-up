@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.client
         .from('customers')
         .update({
-          name: name || customerForStamp.data.name || null,
+          name: name || (customerForStamp.data as Record<string, unknown>).name || null,
           last_visit_date: new Date().toISOString().split('T')[0],
           total_orders: (customerForStamp.data.total_orders || 0) + 1,
         })

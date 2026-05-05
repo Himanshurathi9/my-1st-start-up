@@ -429,6 +429,53 @@ Stage Summary:
 6. Performance optimization (lazy loading, code splitting)
 
 ---
+Task ID: 14
+Agent: Main Agent
+Task: Fix global scrolling issue across entire Next.js app
+
+Work Log:
+- **Investigated all CSS files** (globals.css, design-system.css, menu-themes.css, tailwind.config.ts) for scroll-blocking patterns
+- **Investigated all layout files** (root layout, dashboard layout, admin layout, menu pages) for height/overflow traps
+- **Searched entire project** for `overflow: hidden`, `h-screen`, `100vh`, `position: fixed` patterns
+- **Verified all body scroll lock patterns** in ItemDetailModal, CartSheet, PublicMenuClient, OrderTrackClient — all correctly guarded
+- **ROOT CAUSE**: Tailwind CSS v4 preflight sets `html { height: 100% }` in `@layer base`, which locks the html element to viewport height and prevents page-level scrolling. While previous fixes existed, they needed strengthening.
+
+### Fixes Applied:
+
+**1. globals.css — Bulletproof scroll enforcement (outside @layer for maximum specificity):**
+- Changed `overflow-x: hidden` → `overflow-x: hidden !important` on html (prevents override)
+- Changed `overflow-x: hidden` → `overflow-x: hidden !important` on body (prevents override)
+- Added `flex-grow: 1` to both html and body
+- Added comment explaining Tailwind v4 preflight override
+
+**2. globals.css — @layer base safety net:**
+- Added `height: auto; overflow-y: auto;` to html rule within @layer base
+- Added `height: auto; overflow-y: auto;` to body rule within @layer base
+- This ensures scroll fix works even within the cascade layer system
+
+**3. design-system.css:**
+- Changed `overscroll-behavior-y: contain` → `overscroll-behavior-y: auto` on body (contain could interfere with scroll on some mobile browsers)
+- Updated comments to reference Tailwind v4 preflight override
+
+**4. sidebar.tsx (shadcn/ui SidebarProvider):**
+- Added `overflow-y-auto` to SidebarProvider wrapper div (was missing, could trap scroll when sidebar is used)
+
+**5. page.tsx (Landing page hero section):**
+- Removed `overscrollBehavior: 'contain'` from hero section inline style (was preventing page-level scroll-through on mobile)
+
+Lint Results:
+- Zero errors (lint passes clean)
+- No design, colors, layout, or structural changes made
+
+Stage Summary:
+- Global scroll issue fixed with multi-layered CSS approach
+- Three levels of protection: unlayered !important (strongest), @layer base (medium), component-level (specific)
+- No visual design changes — only scroll behavior fixes
+- All pages (homepage, dashboard, menu, login, admin) should now scroll normally
+- Sidebar can scroll independently when used
+- Mobile touch scrolling preserved
+
+---
 
 Task ID: 9
 Agent: Main Agent

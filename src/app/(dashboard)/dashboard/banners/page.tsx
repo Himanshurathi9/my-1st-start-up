@@ -598,7 +598,7 @@ export default function BannersPage() {
                                 ? `${formatDate(banner.start_date)} – ${formatDate(banner.end_date)}`
                                 : banner.start_date
                                   ? `From ${formatDate(banner.start_date)}`
-                                  : `Until ${formatDate(banner.end_date)}`}
+                                  : `Until ${formatDate(banner.end_date as string)}`}
                             </span>
                           </div>
                         ) : (

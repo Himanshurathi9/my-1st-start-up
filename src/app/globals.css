@@ -245,13 +245,17 @@ button, a, input, select, textarea {
 }
 
 /* ── Critical scroll/interaction rules (OUTSIDE @layer for highest specificity) ── */
+/* Override Tailwind v4 preflight: html { height: 100% } which traps scroll */
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   overflow-y: auto !important;
   min-height: 100%;
-  /* Allow content to grow beyond viewport for scrolling */
+  /* CRITICAL: height must be 'auto' — Tailwind v4 preflight sets 'height: 100%'
+     which locks html to viewport height and prevents page-level scrolling */
   height: auto !important;
+  /* Ensure html grows to fit content */
+  flex-grow: 1;
 }
 
 @supports (height: 100dvh) {
@@ -263,14 +267,16 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   overflow-y: auto !important;
   max-width: 100%;
   /* Ensure body takes at least full viewport height but can grow */
   min-height: 100vh;
   min-height: 100dvh;
+  /* CRITICAL: body must be auto-height, not fixed */
   height: auto !important;
   position: relative;
+  flex-grow: 1;
 }
 
 @layer base {
@@ -280,9 +286,15 @@ body {
   }
   html {
     scroll-behavior: smooth;
+    /* Override Tailwind v4 preflight html { height: 100% } within @layer base */
+    height: auto;
+    overflow-y: auto;
   }
   body {
     @apply bg-background text-foreground;
+    /* Ensure body can grow and scroll */
+    height: auto;
+    overflow-y: auto;
   }
   ::selection {
     background-color: rgba(230, 57, 70, 0.3);

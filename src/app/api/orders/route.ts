@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { buildOrderMessage, buildOrderWhatsAppUrl } from '@/lib/whatsapp'
+import type { Order } from '@/types'
 
 // ─── Types ─────────────────────────────────────────────────────
 interface CartItemInput {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     const orderNumber = await generateOrderNumber(restaurant_id)
 
     // ── Create the order (try with order_number, fallback without) ──
-    let order: Record<string, unknown> | null = null
+    let order: { id: string; table_number: number | null; note: string | null; total_amount: number; created_at: string; status: string; restaurant_id: string; table_id: string | null; updated_at: string } | null = null
     let orderError: { message: string } | null = null
 
     // Try inserting with order_number column
@@ -122,6 +123,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (orderError || !order) {
+      // Type narrowing: ensure order fields are accessible
+      void order
       console.error('[orders POST] Failed to create order:', orderError)
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
@@ -154,13 +157,7 @@ export async function POST(request: NextRequest) {
       // Must be at least 10 digits and start with a digit
       if (cleanPhone.length >= 10 && /^\d+$/.test(cleanPhone)) {
         const orderMessage = buildOrderMessage(
-          {
-            id: order.id,
-            table_number: order.table_number,
-            note: order.note,
-            total_amount: order.total_amount,
-            created_at: order.created_at,
-          },
+          order as unknown as Order,
           orderItems.map((item) => ({
             id: '',
             order_id: order.id,

@@ -66,7 +66,7 @@ function formatTime(dateStr: string): string {
 }
 
 function getOrderNumber(order: Order): string {
-  return (order as Record<string, unknown>).order_number as string || order.id.slice(0, 8).toUpperCase()
+  return ((order as unknown) as Record<string, unknown>).order_number as string || order.id.slice(0, 8).toUpperCase()
 }
 
 function summarizeItems(items: OrderItem[], max: number = 3): string {

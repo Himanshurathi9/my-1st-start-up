@@ -147,8 +147,7 @@ export default async function PublicMenuPage({
     (item: Record<string, unknown>) => ({
       ...item,
       category_name: (item.categories as { name: string } | null)?.name || null,
-    }),
-  )
+    })) as MenuItemWithCategory[]
 
   // 7. Fetch active banners
   const { data: bannerData } = await supabaseAdmin.client

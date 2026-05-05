@@ -545,8 +545,6 @@ function HeroSection() {
         position: 'relative',
         overflow: 'hidden',
         touchAction: 'pan-y',
-        /* Ensure this section doesn't prevent page-level scrolling */
-        overscrollBehavior: 'contain',
       }}
     >
       <div className="mesh-orb-1" />
@@ -3565,7 +3563,7 @@ function ScrollToTopButton() {
    LOADING SKELETON
    ═══════════════════════════════════════════════════════════ */
 function LandingSkeleton() {
-  const skel = (w: string, h: string, r = 8): React.CSSProperties => ({
+  const skel = (w: string | number, h: string | number, r: string | number = 8): React.CSSProperties => ({
     width: w,
     height: h,
     borderRadius: r,

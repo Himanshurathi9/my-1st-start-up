@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import type { OrderStatus } from '@/types'
 
-const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus> = {
+const VALID_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus>> = {
   NEW: 'PREPARING',
   PREPARING: 'SERVED',
 }
