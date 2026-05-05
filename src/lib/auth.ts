@@ -29,7 +29,7 @@ export const authOptions: NextAuthOptions = {
 
         // Detect obviously broken password hashes (e.g. placeholder text)
         if (!user.password_hash || user.password_hash.length < 20) {
-          console.error(`[auth] Broken password_hash for ${user.email}: "${user.password_hash}"`)
+          console.error(`[auth] Broken password_hash for ${user.email}: length=${user.password_hash?.length || 0}`)
           throw new Error('Account setup incomplete. Please contact support.')
         }
 
@@ -57,14 +57,22 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.role = (user as { role: string }).role
+        // Validate role is a known value before storing in JWT
+        const role = (user as { role: string }).role
+        if (typeof role === 'string' && ['ADMIN', 'OWNER'].includes(role)) {
+          token.role = role
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as { id: string }).id = token.id as string
-        ;(session.user as { role: string }).role = token.role as string
+        // Only set role if it's a known value
+        const role = token.role as string | undefined
+        if (typeof role === 'string' && ['ADMIN', 'OWNER'].includes(role)) {
+          ;(session.user as { role: string }).role = role
+        }
       }
       return session
     },

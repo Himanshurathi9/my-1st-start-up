@@ -16,11 +16,17 @@ export function formatPrice(amount: number): string {
 }
 
 export function formatDate(dateString: string): string {
-  return format(new Date(dateString), 'dd MMM yyyy')
+  if (!dateString) return '—'
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return '—'
+  return format(d, 'dd MMM yyyy')
 }
 
 export function timeAgo(dateString: string): string {
-  return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+  if (!dateString) return ''
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return ''
+  return formatDistanceToNow(d, { addSuffix: true })
 }
 
 export function generateSlug(name: string): string {
@@ -34,9 +40,17 @@ export function generateSlug(name: string): string {
 
 export function generateRewardCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const array = new Uint8Array(6)
+  // Use crypto.getRandomValues for cryptographic randomness
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(array)
+  } else {
+    // Fallback for environments without crypto (shouldn't happen in modern Node/browser)
+    for (let i = 0; i < 6; i++) array[i] = Math.floor(Math.random() * 256)
+  }
   let code = ''
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
+    code += chars[array[i] % chars.length]
   }
   return code
 }

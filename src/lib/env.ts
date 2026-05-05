@@ -7,10 +7,12 @@
 function requiredEnv(key: string): string {
   const value = process.env[key]
   if (!value) {
-    // In development, show a clear error. In production, use placeholder to avoid crashes.
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`[env] WARNING: ${key} is not set. Check your .env file.`)
+    // In production, throw immediately — missing secrets are a fatal error
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`[env] FATAL: ${key} is required but not set. Set it in your environment or .env file.`)
     }
+    // In development, warn but allow the app to start
+    console.warn(`[env] WARNING: ${key} is not set. Check your .env file.`)
     return ''
   }
   return value

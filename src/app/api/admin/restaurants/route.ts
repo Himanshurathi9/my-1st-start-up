@@ -20,8 +20,9 @@ async function verifyAdmin() {
 
 // GET: Fetch all restaurants with owner info
 export async function GET() {
-  const { error } = await verifyAdmin()
-  if (error) return error
+  try {
+    const { error } = await verifyAdmin()
+    if (error) return error
 
   const { data: restaurants, error: dbError } = await supabaseAdmin.client
     .from('restaurants')
@@ -100,12 +101,17 @@ export async function GET() {
   }))
 
   return NextResponse.json({ restaurants: enriched })
+  } catch (err) {
+    console.error('[GET /api/admin/restaurants]', err)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+  }
 }
 
 // POST: Create new restaurant + owner account
 export async function POST(req: NextRequest) {
-  const { error } = await verifyAdmin()
-  if (error) return error
+  try {
+    const { error } = await verifyAdmin()
+    if (error) return error
 
   const body = await req.json()
   const {
@@ -220,12 +226,17 @@ export async function POST(req: NextRequest) {
       password: owner_password,
     },
   })
+  } catch (err) {
+    console.error('[POST /api/admin/restaurants]', err)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+  }
 }
 
 // PATCH: Update plan + expiry
 export async function PATCH(req: NextRequest) {
-  const { error } = await verifyAdmin()
-  if (error) return error
+  try {
+    const { error } = await verifyAdmin()
+    if (error) return error
 
   const body = await req.json()
   const { restaurant_id, plan, plan_expiry_date } = body
@@ -291,4 +302,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   return NextResponse.json({ restaurant: updated })
+  } catch (err) {
+    console.error('[PATCH /api/admin/restaurants]', err)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+  }
 }

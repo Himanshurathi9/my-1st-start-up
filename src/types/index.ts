@@ -5,12 +5,17 @@ export type FoodType = 'VEG' | 'NONVEG' | 'EGG'
 export type PaymentType = 'SETUP' | 'SUBSCRIPTION'
 export type PaymentMethod = 'UPI' | 'CASH'
 
+/** User type for general use — does NOT include sensitive fields */
 export interface User {
   id: string
   email: string
-  password_hash: string
   role: UserRole
   created_at: string
+}
+
+/** Internal type for auth flow only — includes password hash */
+export interface UserWithHash extends User {
+  password_hash: string
 }
 
 export type ThemeName = 'dark' | 'emerald' | 'sunset' | 'royal'

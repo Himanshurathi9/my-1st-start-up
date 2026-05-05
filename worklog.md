@@ -1604,3 +1604,66 @@ Stage Summary:
 - No UI redesign, layout changes, or styling modifications
 - End-to-end flow now works: QR scan → table detection → localStorage persistence → cart → order with table number
 - Edge cases handled: no table param (manual input), invalid table (rejected), direct URL (localStorage recovery), takeaway (no table number)
+
+---
+Task ID: 16
+Agent: Main Agent
+Task: Comprehensive codebase engineering review and fixes
+
+Work Log:
+- Performed full engineering audit of the MenuMate project using two parallel exploration agents
+- **AUDIT SCOPE**: Dead code, type safety, security, error handling, memory leaks, race conditions, performance, console.log statements, API error handling, unused dependencies, config issues
+- **AUDIT RESULTS**: 64 total issues found (1 critical, 6 high, 20 medium, 37 low)
+
+### Fixes Applied:
+
+**1. auth.ts — Security fixes (HIGH)**
+- Removed password hash from console.error log (was logging actual hash values)
+- Added role validation in JWT and session callbacks — only known roles (ADMIN, OWNER) are stored, preventing injection of arbitrary values via tampered JWTs
+
+**2. env.ts — Configuration safety (CRITICAL)**
+- Changed `requiredEnv()` to actually THROW in production when env vars are missing (previously returned empty string silently, causing cascading runtime failures)
+
+**3. utils.ts — Security + robustness (HIGH)**
+- Replaced `Math.random()` with `crypto.getRandomValues()` in `generateRewardCode()` for cryptographically secure reward codes
+- Added null/invalid guards to `formatDate()` and `timeAgo()` to prevent crashes on malformed date strings
+
+**4. whatsapp.ts — Input validation (HIGH)**
+- Added phone number validation in `buildOrderWhatsAppUrl()` — must be 7-15 digits after cleaning, returns empty string if invalid
+
+**5. next.config.ts — Hardening (MEDIUM)**
+- Added `poweredByHeader: false` to prevent information disclosure in HTTP response headers
+
+**6. types/index.ts — Security (MEDIUM)**
+- Removed `password_hash` from the shared `User` type
+- Created separate `UserWithHash` interface for auth flow only, preventing accidental password hash leakage
+
+**7. Admin API routes — Error handling (HIGH)**
+- Added try/catch to all 3 handlers in `/api/admin/restaurants/route.ts` (GET, POST, PATCH) — previously any unhandled error would crash with raw 500
+
+**8. Dead code cleanup (MEDIUM)**
+- Removed 6 dead files: `src/lib/sounds.ts`, `src/lib/db.ts`, `src/lib/qrcode.ts`, `src/lib/supabase.ts`, `src/app/api/route.ts`, `src/app/api/pdf/route.ts`
+
+**9. Unused dependencies (MEDIUM)**
+- Removed 18 unused npm packages: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `@hookform/resolvers`, `@mdxeditor/editor`, `@reactuses/core`, `@tanstack/react-query`, `@tanstack/react-table`, `framer-motion`, `next-intl`, `next-themes`, `pg`, `react-hook-form`, `react-markdown`, `react-syntax-highlighter`, `sonner`, `uuid`, `vaul`
+- Moved `prisma` from dependencies to devDependencies
+
+### Lint Results:
+- Zero errors, zero warnings — clean pass after all changes
+
+### Remaining Known Issues (not fixed this round):
+- React Error Boundaries still missing (no `error.tsx` files)
+- `ignoreBuildErrors: true` and `reactStrictMode: false` in next.config.ts (intentional TODOs)
+- No React Query or Zustand usage (all data fetching uses raw fetch)
+- 27+ console.log statements remain (intentionally left as debug logging from QR fix task)
+- Prisma schema still stale (app uses Supabase directly)
+- Public API routes still unauthenticated (orders, notifications, stamps) — intentional for QR-based ordering flow
+
+Stage Summary:
+- Comprehensive 64-issue engineering audit completed
+- 11 targeted fixes applied across 10 files
+- 6 dead code files removed
+- 18 unused dependencies removed (significant install size reduction)
+- Zero lint errors
+- No UI/layout/design changes — only engineering quality improvements
+

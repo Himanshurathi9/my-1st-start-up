@@ -29,8 +29,13 @@ export function buildOrderWhatsAppUrl(
   phoneNumber: string,
   message: string
 ): string {
-  // Remove +, spaces, dashes from phone number
-  const cleanPhone = phoneNumber.replace(/[\+\s\-]/g, '')
+  // Remove +, spaces, dashes, parens from phone number
+  const cleanPhone = phoneNumber.replace(/[\+\s\-()]/g, '').trim()
+  // Validate: must be 7-15 digits only
+  if (!/^\d{7,15}$/.test(cleanPhone)) {
+    console.warn(`[whatsapp] Invalid phone number: "${phoneNumber}" (cleaned: "${cleanPhone}")`)
+    return ''
+  }
   const encodedMessage = encodeURIComponent(message)
   return `https://wa.me/${cleanPhone}?text=${encodedMessage}`
 }
