@@ -1465,6 +1465,129 @@
   flex-shrink: 0;
 }
 
+/* ─── Order Type Toggle Bar ────────────────────────────────── */
+.order-type-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.order-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 18px;
+  border: 1.5px solid var(--m-card-border);
+  background: transparent;
+  color: var(--m-text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+.order-type-btn:active {
+  transform: scale(0.95);
+}
+.order-type-btn--active {
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  border-color: var(--m-primary);
+  box-shadow: 0 2px 8px var(--m-primary-glow);
+}
+
+.order-type-table {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-text-muted);
+  margin-left: 2px;
+}
+
+.order-type-btn--active .order-type-table {
+  color: var(--m-primary-text);
+  opacity: 0.8;
+}
+
+.order-type-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--m-text-muted);
+  padding: 0 16px 4px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ─── Empty Cart State ─────────────────────────────────────── */
+.empty-cart-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+.empty-cart-icon {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 16px;
+  filter: grayscale(0.2);
+}
+.empty-cart-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--m-text);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.empty-cart-desc {
+  font-size: 13px;
+  color: var(--m-text-muted);
+  max-width: 240px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.empty-cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: var(--m-primary);
+  color: var(--m-primary-text);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  box-shadow: 0 2px 10px var(--m-primary-glow);
+  transition: transform 120ms ease, box-shadow 150ms ease;
+}
+.empty-cart-btn:active {
+  transform: scale(0.96);
+}
+
+/* ─── Order type bar responsive overrides ──────────────────── */
+@media (max-width: 360px) {
+  .order-type-btn {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .order-type-bar {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+}
+
 /* ─── Desktop responsive overrides ──────────────────────────── */
 @media (min-width: 641px) {
   .menu-service-bar {

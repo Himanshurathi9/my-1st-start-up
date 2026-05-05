@@ -157,6 +157,7 @@ export default function PublicMenuClient({
   const [activeTab, setActiveTab] = useState<'menu' | 'stamps'>('menu')
   const [stampSettings, setStampSettings] = useState<StampSettings | null>(null)
   const [foodTypeFilter, setFoodTypeFilter] = useState<'all' | 'VEG' | 'NONVEG'>('all')
+  const [orderType, setOrderType] = useState<'dine-in' | 'takeaway'>('dine-in')
 
   // ─── Debounce guards (prevent double-click double-fire) ─────
   const waiterFiringRef = useRef(false)
@@ -677,7 +678,33 @@ export default function PublicMenuClient({
             </div>
           )}
 
-          {/* ═══ 2.5 FOOD TYPE FILTER CHIPS ═══ */}
+          {/* ═══ 2.5 ORDER TYPE SELECTOR ═══ */}
+          {!searchOpen && (
+            <div className="order-type-bar">
+              <button
+                className={`order-type-btn${orderType === 'dine-in' ? ' order-type-btn--active' : ''}`}
+                onClick={() => setOrderType('dine-in')}
+              >
+                <span>🍽️</span>
+                <span>Dine-in</span>
+                {tableNumber != null && (
+                  <span className="order-type-table">Table {tableNumber}</span>
+                )}
+              </button>
+              <button
+                className={`order-type-btn${orderType === 'takeaway' ? ' order-type-btn--active' : ''}`}
+                onClick={() => setOrderType('takeaway')}
+              >
+                <span>🥡</span>
+                <span>Takeaway</span>
+              </button>
+            </div>
+          )}
+          {orderType === 'takeaway' && !searchOpen && (
+            <p className="order-type-hint">Pickup available at restaurant</p>
+          )}
+
+          {/* ═══ 2.6 FOOD TYPE FILTER CHIPS ═══ */}
           {hasMixedFoodTypes && !searchOpen && (
             <div className="food-type-chips menu-scroll-hide">
               <button

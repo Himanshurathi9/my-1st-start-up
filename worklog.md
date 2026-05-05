@@ -691,3 +691,252 @@ Stage Summary:
 4. **Performance optimization** — Lazy loading for below-fold content, code splitting
 5. **Accessibility audit** — ARIA labels, keyboard navigation, screen reader testing
 6. **Security hardening** — Move secrets to environment variables, enable TypeScript strict mode
+
+---
+Task ID: 15
+Agent: Styling Enhancement Agent
+Task: Enhance landing page testimonials, features grid, footer, and how-it-works sections
+
+Work Log:
+- Read page.tsx (~3675 lines) and worklog.md to understand project context, existing T design tokens, AnimatedSection wrapper, and inline style patterns
+- **Testimonials Section Enhancement:**
+  - Added enhanced gradient background: `radial-gradient(ellipse at 50% 0%, rgba(230,57,70,0.04), transparent 60%)` layered over existing gradient
+  - Added centered gradient divider line (60px wide, accent-colored gradient fade) above the section
+  - Added "What our customers say" subtitle below heading with `T.textMuted` color
+  - Added `translateY(-4px)` hover lift effect to testimonial cards with 300ms transition, enhanced shadow on hover
+- **Features Grid Enhancement:**
+  - Added dot pattern background using `radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)` at 24px spacing
+  - Added icon color coding with unique colors per feature: QR Code (#E63946), WhatsApp (#25D366), Loyalty (#F59E0B), Banners (#3B82F6), Dashboard (#8B5CF6), No App (#10B981)
+  - Each icon has matching `iconBg` and `iconGlow` values for the container background and hover glow ring
+  - Added subtle glow ring (box-shadow) around icon container on card hover, using per-feature `iconGlow` color
+- **Footer Enhancement:**
+  - Added subtle dot pattern background (20px spacing) to footer
+  - Enhanced gradient top border opacity from 0.3 to 0.4
+  - Added hover underline animation on navigation links (border-bottom transitions from transparent to textPrimary)
+  - Added "Made with ❤️ in Surat, India" text after copyright line with slightly muted styling
+- **How It Works Section Enhancement:**
+  - Added numbered circle badges (1, 2, 3) with accent-colored background, white text, and subtle box-shadow
+  - Added dashed connecting lines between step numbers on desktop (2px dashed, accent color at 0.25 opacity)
+  - Increased AnimatedSection stagger delay from 120ms to 150ms per step for smoother cascade
+  - Added `stepBadgePop` CSS keyframe animation for step number pop-in effect
+- Added CSS classes to global style block: `.how-step-number` (badge pop animation), `.footer-nav-link` (underline transition), `.feature-icon-wrap` (glow ring transition)
+
+Lint Results:
+- Zero errors — `bun run lint` passes clean
+- Dev server compiles successfully (GET / 200)
+
+Stage Summary:
+- All 4 sections enhanced with visual polish while preserving existing structure and functionality
+- Icon color coding makes features grid more visually distinct and scannable
+- Hover effects (testimonial lift, icon glow ring, footer underline) add interactivity depth
+- Step badges and connecting lines improve How It Works flow visualization
+- Dot patterns on Features and Footer add subtle texture without changing overall design
+- All animations use GPU-accelerated properties (transform, opacity, box-shadow)
+
+---
+Task ID: 16
+Agent: Feature Agent  
+Task: Add order type selector and enhance empty cart state
+
+Work Log:
+- Added CSS classes to `src/styles/menu-themes.css`:
+  - `.order-type-bar` — flex row container with centered alignment, gap, and max-width 1200px
+  - `.order-type-btn` — ghost-style pill button (36px height, rounded 18px, border using `var(--m-card-border)`, transparent bg)
+  - `.order-type-btn--active` — accent background (`var(--m-primary)`), white text, glow shadow
+  - `.order-type-table` — muted text badge showing table number (11px, appears only when tableNumber is set)
+  - `.order-type-btn--active .order-type-table` — adjusts text color and opacity for active state
+  - `.order-type-hint` — centered small text for takeaway hint ("Pickup available at restaurant")
+  - `.empty-cart-state` — centered flex column layout for empty cart content
+  - `.empty-cart-icon` — large 56px emoji container
+  - `.empty-cart-heading` — 16px bold heading ("Your cart is empty")
+  - `.empty-cart-desc` — 13px muted description text
+  - `.empty-cart-btn` — primary-styled "Browse Menu" button with UtensilsCrossed icon
+  - Responsive overrides for 360px screens (tighter order type buttons)
+
+- Modified `src/components/menu/PublicMenuClient.tsx`:
+  - Added `orderType` state (`'dine-in' | 'takeaway'`, default `'dine-in'`)
+  - Added Order Type Selector section (2.5) between category bar and food type filter chips
+  - Toggle bar with two buttons: "🍽️ Dine-in" and "🥡 Takeaway"
+  - Shows "Table X" badge next to Dine-in when `tableNumber` is not null
+  - Active button uses `var(--m-primary)` background, inactive uses ghost/border style
+  - Shows "Pickup available at restaurant" hint text when Takeaway is selected
+  - Hidden during search mode (respecting `searchOpen` state)
+  - Renumbered food type chips section from 2.5 to 2.6
+
+- Modified `src/components/menu/CartSheet.tsx`:
+  - Added `UtensilsCrossed` to lucide-react imports
+  - Replaced simple empty cart state (icon + text) with enhanced empty state
+  - New empty state includes: 🍕 emoji icon, "Your cart is empty" heading, "Add items from the menu to get started" description, "Browse Menu" button with UtensilsCrossed icon
+  - "Browse Menu" button calls `onClose()` to dismiss the sheet
+
+- Lint: Zero errors (clean pass)
+- Dev server: Compiles successfully
+
+Stage Summary:
+- Order type selector (Dine-in / Takeaway toggle) added to public menu between category bar and food type filters
+- Table number badge shown next to Dine-in when available
+- Takeaway hint text displayed when takeaway is selected
+- Empty cart state enhanced with friendly visual design, emoji, description, and "Browse Menu" CTA button
+- All CSS uses var(--m-*) theme variables for cross-theme compatibility
+- All existing functionality preserved — no breaking changes
+
+---
+Task ID: 17
+Agent: Enhancement Agent
+Task: Enhance order tracking page with timeline improvements, WhatsApp FAB, and track-another-order link
+
+Work Log:
+- Read and analyzed `src/components/menu/OrderTrackClient.tsx` (1485 lines) to understand existing components: Confetti, StampEarnedPopup, StepIcon, ProgressBar, OrderSummary, StampInfoCard, GuidanceCard, OrderDetailsCard, OrderTimeline (5-step), WhatsAppCTA, SkeletonTrack, OrderNotFound, OrderTrackClient (main)
+
+### Enhancement 1: Order Status Timeline — Accent Color + Pulse Animation
+- Verified existing `OrderTimeline` component already had 5 steps (Placed, Confirmed, Preparing, Ready, Delivered) with accent-colored circles for completed/active steps and gray for pending
+- Verified connecting lines already used accent color `#E63946` for completed segments
+- Verified completed step labels and time text already used accent color
+- **Added missing `ot-pulse-ring` keyframe** — the timeline's active step referenced `ot-pulse-ring` animation but the keyframe was never defined. Added to main component's `<style>` block: pulsing box-shadow ring (0→10px expansion at 0.4 opacity→0) over 1.5s with ease-out timing
+- **Added `wa-fab-bounce` keyframe** — subtle Y-axis bounce animation for floating WhatsApp button
+- **Added `wa-fab-pulse` keyframe** — green pulsing ring animation for WhatsApp FAB (0→14px at 0.5 opacity→0) over 2s
+
+### Enhancement 2: Floating WhatsApp Support FAB
+- Added fixed-position WhatsApp FAB button at bottom-right corner (z-index 50)
+- 56×56px green (#25D366) circle with white WhatsApp SVG icon (28px)
+- Opens `wa.me/{phoneNumber}` link in new tab
+- `wa-fab-pulse` infinite animation for attention-grabbing glow ring
+- `aria-label="Chat on WhatsApp"` for accessibility
+- Only renders when `whatsappNumber` prop is provided
+- Complements the existing inline `WhatsAppCTA` card (which is still rendered in content flow)
+
+### Enhancement 3: "Track another order" Link
+- Verified the link already exists at the very bottom of the page (inside `<footer>` with `mt-auto`)
+- Links back to `/menu/{slug}` with accent-colored text and arrow
+- No changes needed — already positioned correctly
+
+### Files Modified:
+- `src/components/menu/OrderTrackClient.tsx` — Added 3 CSS keyframe animations + floating WhatsApp FAB element
+
+Lint Results:
+- Zero errors (lint passes clean)
+- Dev server compiles successfully
+
+Stage Summary:
+- Added missing `ot-pulse-ring` keyframe that was referenced but undefined, fixing the timeline's active step pulse animation
+- Added floating WhatsApp FAB button at bottom-right of order tracking page with pulse animation
+- "Track another order" link already existed at the correct position
+- All existing functionality preserved — stamps, confetti, polling, status detection unchanged
+- All styling uses inline styles consistent with existing codebase patterns
+
+---
+
+Task ID: 18
+Agent: Main Agent
+Task: Add loading skeleton, button ripple effect, AnimatedSection wrapping, and page fade-in to landing page
+
+Work Log:
+- **Enhancement 1 — Loading skeleton timing**: Changed loading timeout from 800ms to 600ms for snappier perceived load time. The `LandingSkeleton` component was already in place with shimmer-animated placeholders for navbar, hero, features grid, stats, and footer.
+- **Enhancement 2 — Skeleton shimmer keyframe**: Added missing `@keyframes mmSkelShimmer` CSS that was referenced by the skeleton's inline styles but never defined. The shimmer uses `background-position` animation (200% → -200%) for a smooth sweeping effect over the 1.5s infinite loop.
+- **Enhancement 3 — Button ripple effect**: Added `mm-ripple-btn` CSS class with a `::after` pseudo-element ripple animation. On `:active`, a 300px accent-colored circle (rgba(230,57,70,0.35)) expands from center with opacity fade, creating a subtle Material Design-inspired press feedback. The ripple element has `pointer-events: none` and `z-index: 1` to avoid blocking interaction. Already applied to 5 CTA buttons; added to the "Send on WhatsApp" inquiry form submit button as well (6 buttons total).
+- **Enhancement 4 — AnimatedSection verification**: Confirmed all 15 sections are already wrapped in `AnimatedSection` with staggered delays (0ms to 1400ms in 100ms increments). No changes needed.
+- **Enhancement 5 — Page enter fade-in**: Added `mm-page-enter` CSS class with `mmPageEnter` keyframe animation (opacity 0→1 over 500ms ease-out with `forwards` fill mode). Applied to the main wrapper div in `LandingPage`, ensuring the entire page content fades in smoothly after the skeleton dismisses.
+
+### CSS Added to `<style jsx global>` block:
+- `.mm-page-enter` — Page fade-in animation (500ms)
+- `@keyframes mmPageEnter` — opacity 0→1 transition
+- `@keyframes mmSkelShimmer` — Skeleton shimmer sweep
+- `.mm-ripple-btn` — Button ripple container (position: relative, overflow: hidden)
+- `.mm-ripple-btn::after` — Ripple pseudo-element (centered, hidden by default)
+- `.mm-ripple-btn:active::after` — Ripple expansion on press (300px circle, accent color)
+
+### Buttons with ripple effect:
+1. "Get Started Free" — Navbar desktop
+2. "Get Started Free" — Navbar mobile overlay
+3. "See Live Demo →" — Hero section
+4. "Get Started on WhatsApp" — Hero section
+5. "Start Free Trial →" — CTA Banner section
+6. "Send on WhatsApp →" — Inquiry form submit (newly added)
+
+Lint Results:
+- Zero errors (lint passes clean)
+- No new warnings introduced
+
+Stage Summary:
+- All 4 enhancements implemented
+- Loading skeleton timing reduced from 800ms to 600ms
+- Missing shimmer keyframe fixed — skeleton animations now work correctly
+- Ripple effect on all 6 primary CTA buttons provides tactile press feedback
+- Page enter fade-in creates smooth transition from skeleton to content
+- All existing AnimatedSection wrappers with staggered delays confirmed intact
+- No layout, structure, color, or content changes
+
+---
+
+## Phase 8 Summary — Cron Review Round (Tasks 15-18)
+
+### Current Project Status Assessment
+
+**Overall Health: ✅ STABLE**
+- All 4 public pages compile and serve with 200 OK
+- Zero lint errors across the entire codebase
+- No compilation errors or build failures
+
+### QA Testing Results
+| Page | Status | Compile Time |
+|------|--------|-------------|
+| `/` Landing | ✅ 200 | ~1.6s (first) / 38ms (cached) |
+| `/login` | ✅ 200 | ~859ms |
+| `/menu/brew-house-demo` | ✅ 200 | ~3.2s |
+| `/menu/.../track/test-order` | ✅ 200 | ~1.2s |
+
+### Completed This Round
+
+#### Styling Enhancements
+1. **Landing page sections** (Task 15):
+   - Testimonials: Gradient background, divider line, subtitle text, hover lift effect
+   - Features grid: Dot pattern background, color-coded icons (6 unique colors), glow ring on hover
+   - Footer: Gradient top border, hover underline on nav links, "Made with ❤️ in Surat, India" text
+   - How It Works: Compact numbered circle badges, dashed connecting lines, staggered pop-in animation
+
+2. **Order type selector** (Task 16):
+   - Dine-in / Takeaway toggle bar with table number indicator
+   - Active/inactive pill styling with accent colors
+   - "Pickup available at restaurant" hint for takeaway mode
+   - Responsive CSS with 360px breakpoint
+
+3. **Empty cart sheet** (Task 16):
+   - Friendly empty state with food emoji, heading, description
+   - "Browse Menu" button with UtensilsCrossed icon
+   - Responsive styling across all themes
+
+4. **Order tracking page** (Task 17):
+   - Fixed missing `ot-pulse-ring` keyframe — timeline pulse animation now works
+   - Floating WhatsApp FAB (56×56px, green, pulse ring animation)
+   - Order timeline: 5-step visual flow (Placed → Confirmed → Preparing → Ready → Delivered)
+   - Completed/pending/current step styling with checkmark icons
+
+5. **Loading skeleton + micro-interactions** (Task 18):
+   - Reduced skeleton timeout from 800ms → 600ms for snappier load
+   - Fixed missing `mmSkelShimmer` keyframe — shimmer sweep now works
+   - Ripple effect on 6 primary CTA buttons (accent color, subtle press feedback)
+   - Page enter fade-in (500ms ease-out) for smooth skeleton-to-content transition
+
+### Files Modified This Round
+- `src/app/page.tsx` — Loading skeleton, ripple effect, page fade-in, section enhancements
+- `src/components/menu/PublicMenuClient.tsx` — Order type selector
+- `src/components/menu/CartSheet.tsx` — Empty cart state
+- `src/components/menu/OrderTrackClient.tsx` — WhatsApp FAB, timeline fix
+- `src/styles/menu-themes.css` — Order type, empty cart CSS
+
+### ⚠️ Known Issues (Unchanged)
+1. Dev server instability in sandbox (auto-restart wrapper mitigates)
+2. Hardcoded secrets in env.ts (pre-existing)
+3. Dashboard/Admin pages not QA-tested via browser
+4. Prisma schema stale (app uses Supabase)
+5. Tables page returns null (placeholder)
+6. Dashboard sparklines use hardcoded mock data
+7. Cross-origin preview warning (non-blocking, cosmetic)
+
+### 📋 Recommended Priority for Next Phase
+1. **QA dashboard/admin pages** — Set up authenticated session for browser testing
+2. **Implement real dashboard stats** — Replace mock sparklines with Supabase data
+3. **Activate Tables page** — QR code generation and table management
+4. **Add order notifications** — Real-time toast notifications for new orders
+5. **Performance optimization** — Image lazy loading, code splitting, font optimization
+6. **Accessibility audit** — Full ARIA labels, keyboard navigation, screen reader testing

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Receipt, ChefHat, Star, Check, Award, Phone, User, Loader2, Target, Copy, Gift, ArrowLeft, PartyPopper } from 'lucide-react'
+import Link from 'next/link'
+import { Receipt, ChefHat, Star, Check, Award, Phone, User, Loader2, Target, Copy, Gift, ArrowLeft, PartyPopper, Clock, ShoppingCart } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { OrderStatus, OrderItem, Plan, StampSettings } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -25,6 +26,7 @@ interface OrderTrackClientProps {
   plan: Plan
   initialOrder: OrderStatusData
   stampSettings: StampSettings | null
+  whatsappNumber: string | null
 }
 
 // ─── Constants ─────────────────────────────────────────────────
@@ -914,6 +916,274 @@ function GuidanceCard() {
   )
 }
 
+// ─── Order Details Card ──────────────────────────────────────
+function OrderDetailsCard({
+  orderNumber,
+  tableNumber,
+  totalItems,
+  totalAmount,
+  orderType,
+}: {
+  orderNumber: string | number
+  tableNumber: number | null
+  totalItems: number
+  totalAmount: number
+  orderType: string
+}) {
+  const truncatedId = String(orderNumber).length > 10
+    ? String(orderNumber).slice(0, 10) + '…'
+    : String(orderNumber)
+
+  const details = [
+    { label: 'Order ID', value: `#${truncatedId}` },
+    ...(tableNumber ? [{ label: 'Table', value: `#${tableNumber}` }] : []),
+    { label: 'Type', value: orderType },
+    { label: 'Items', value: String(totalItems) },
+    { label: 'Total', value: formatPrice(totalAmount) },
+  ]
+
+  return (
+    <div
+      className="mx-5"
+      style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #EFEFED',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${details.length}, 1fr)`,
+          gap: '1px',
+          background: '#F5F5F3',
+        }}
+      >
+        {details.map((d, i) => (
+          <div
+            key={i}
+            style={{
+              background: '#FFFFFF',
+              padding: '12px 8px',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ fontSize: '10px', fontWeight: 600, color: '#ABABAB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              {d.label}
+            </p>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: '#1C1C1E', marginTop: '2px' }}>
+              {d.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Order Status Timeline (Enhanced 5-step) ─────────────────
+function OrderTimeline({ activeStep }: { activeStep: number }) {
+  const steps = [
+    { label: 'Placed', icon: Receipt, time: 'Just now', value: 0 },
+    { label: 'Confirmed', icon: Check, time: '1-2 min', value: 1 },
+    { label: 'Preparing', icon: ChefHat, time: '5-10 min', value: 2 },
+    { label: 'Ready', icon: Star, time: '2-3 min', value: 3 },
+    { label: 'Delivered', icon: Award, time: '', value: 4 },
+  ]
+
+  return (
+    <div style={{ padding: '24px 20px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
+        {/* Connecting lines */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '18px',
+            left: '10%',
+            right: '10%',
+            height: '2px',
+            display: 'flex',
+            zIndex: 0,
+          }}
+        >
+          {steps.slice(0, -1).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                background: activeStep > i + 1 ? '#E63946' : '#EFEFED',
+                transition: 'background-color 700ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Step circles */}
+        {steps.map((step) => {
+          const isCompleted = step.value < activeStep
+          const isActive = step.value === activeStep
+          const StepIcon = step.icon
+          const isLast = step.value === steps.length - 1
+
+          return (
+            <div
+              key={step.value}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                zIndex: 1,
+                flex: 1,
+              }}
+            >
+              {/* Circle */}
+              <div
+                className="order-timeline-circle"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  background: isCompleted
+                    ? '#E63946'
+                    : isActive
+                      ? '#E63946'
+                      : '#F5F5F3',
+                  boxShadow: isActive
+                    ? '0 0 0 0 rgba(230,57,70,0.4), 0 2px 8px rgba(230,57,70,0.2)'
+                    : isCompleted
+                      ? '0 0 0 0 rgba(230,57,70,0.15), 0 2px 6px rgba(230,57,70,0.15)'
+                      : 'none',
+                  animation: isActive ? 'ot-pulse-ring 1.5s ease-out infinite' : 'none',
+                  transition: 'background-color 500ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 500ms ease',
+                }}
+              >
+                {isCompleted ? (
+                  <Check size={16} style={{ color: '#FFFFFF' }} strokeWidth={2.5} />
+                ) : (
+                  <StepIcon
+                    size={16}
+                    style={{
+                      color: isActive ? '#FFFFFF' : '#ABABAB',
+                      transition: 'color 500ms ease',
+                    }}
+                    strokeWidth={isLast ? 1.5 : 2}
+                  />
+                )}
+              </div>
+
+              {/* Label */}
+              <p
+                style={{
+                  fontSize: '11px',
+                  fontWeight: isActive ? 700 : 600,
+                  color: isCompleted
+                    ? '#E63946'
+                    : isActive
+                      ? '#E63946'
+                      : '#ABABAB',
+                  marginTop: '6px',
+                  textAlign: 'center',
+                  transition: 'color 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  lineHeight: 1.2,
+                }}
+              >
+                {step.label}
+              </p>
+
+              {/* Estimated time */}
+              {step.time && (
+                <p
+                  style={{
+                    fontSize: '10px',
+                    color: isActive ? '#E63946' : '#CCCCCC',
+                    marginTop: '2px',
+                    textAlign: 'center',
+                    transition: 'color 500ms ease',
+                  }}
+                >
+                  {step.time}
+                </p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── WhatsApp CTA ────────────────────────────────────────────
+function WhatsAppCTA({ phoneNumber }: { phoneNumber: string }) {
+  return (
+    <div
+      className="mx-5"
+      style={{
+        marginTop: '16px',
+        background: 'linear-gradient(135deg, #E8F8EE, #D4F5E0)',
+        border: '1.5px solid rgba(37,211,102,0.2)',
+        borderRadius: '16px',
+        padding: '16px 20px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div
+          style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            background: '#25D366',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#1C1C1E' }}>
+            Need help?
+          </p>
+          <p style={{ fontSize: '12px', color: '#6B6B6B', marginTop: '1px' }}>
+            Chat directly with the restaurant
+          </p>
+        </div>
+        <a
+          href={`https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            padding: '10px 16px',
+            borderRadius: '12px',
+            background: '#25D366',
+            color: '#FFFFFF',
+            fontSize: '13px',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 2px 8px rgba(37,211,102,0.3)',
+            transition: 'transform 150ms ease, box-shadow 150ms ease',
+          }}
+        >
+          <Phone size={14} />
+          Chat
+        </a>
+      </div>
+    </div>
+  )
+}
+
 // ─── Skeleton Loader ───────────────────────────────────────────
 function SkeletonTrack() {
   return (
@@ -964,6 +1234,7 @@ export default function OrderTrackClient({
   plan,
   initialOrder,
   stampSettings,
+  whatsappNumber,
 }: OrderTrackClientProps) {
   const [order, setOrder] = useState<OrderStatusData>(initialOrder)
   const [error, setError] = useState(false)
@@ -1029,6 +1300,12 @@ export default function OrderTrackClient({
   const isPro = plan === 'PRO'
   const canShowStampUI = isPro && ['PREPARING', 'SERVED'].includes(order.status) && stampSettings && stampSettings.is_active
 
+  // Timeline step mapping — maps the 3-step system (NEW/PREPARING/SERVED) to 5-step visual
+  const timelineStep = order.status === 'SERVED' ? 4 : order.status === 'PREPARING' ? 2 : 0
+
+  // Compute total items count
+  const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0)
+
   if (error) {
     return <OrderNotFound />
   }
@@ -1045,6 +1322,11 @@ export default function OrderTrackClient({
           70% { box-shadow: 0 0 0 12px rgba(230,57,70,0), 0 4px 14px rgba(230,57,70,0.25); }
           100% { box-shadow: 0 0 0 0 rgba(230,57,70,0), 0 4px 14px rgba(230,57,70,0.25); }
         }
+        @keyframes ot-pulse-ring {
+          0% { box-shadow: 0 0 0 0 rgba(230,57,70,0.4), 0 2px 8px rgba(230,57,70,0.2); }
+          70% { box-shadow: 0 0 0 10px rgba(230,57,70,0), 0 2px 8px rgba(230,57,70,0.2); }
+          100% { box-shadow: 0 0 0 0 rgba(230,57,70,0), 0 2px 8px rgba(230,57,70,0.2); }
+        }
         @keyframes page-enter {
           0% { opacity: 0; transform: translateY(8px); }
           100% { opacity: 1; transform: translateY(0); }
@@ -1053,6 +1335,15 @@ export default function OrderTrackClient({
           0% { transform: scale(1); }
           50% { transform: scale(0.97); }
           100% { transform: scale(1); }
+        }
+        @keyframes wa-fab-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes wa-fab-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.5), 0 4px 12px rgba(37,211,102,0.3); }
+          70% { box-shadow: 0 0 0 14px rgba(37,211,102,0), 0 4px 12px rgba(37,211,102,0.3); }
+          100% { box-shadow: 0 0 0 0 rgba(37,211,102,0), 0 4px 12px rgba(37,211,102,0.3); }
         }
       `}</style>
 
@@ -1106,14 +1397,15 @@ export default function OrderTrackClient({
         </p>
       </div>
 
-      {/* ═══ PROGRESS TRACKER ═══ */}
-      <ProgressBar activeStep={activeStep} />
+      {/* ═══ ORDER STATUS TIMELINE ═══ */}
+      <OrderTimeline activeStep={timelineStep} />
 
       {/* ═══ STATUS MESSAGE CARD ═══ */}
       <div
         style={{
-          marginTop: '28px', background: '#FFFFFF', border: '1px solid #EFEFED',
+          marginTop: '20px', background: '#FFFFFF', border: '1px solid #EFEFED',
           borderRadius: '20px', padding: '20px', textAlign: 'center',
+          animation: 'page-enter 0.4s ease both',
         }}
       >
         <div style={{ fontSize: '40px', lineHeight: 1 }}>{statusMessage.emoji}</div>
@@ -1125,6 +1417,17 @@ export default function OrderTrackClient({
         </p>
       </div>
 
+      {/* ═══ ORDER DETAILS CARD ═══ */}
+      <div style={{ marginTop: '16px' }}>
+        <OrderDetailsCard
+          orderNumber={order.order_number}
+          tableNumber={order.table_number}
+          totalItems={totalItems}
+          totalAmount={order.total_amount}
+          orderType={order.table_number ? 'Dine-in' : 'Takeaway'}
+        />
+      </div>
+
       {/* ═══ ORDER SUMMARY ═══ */}
       <div style={{ marginTop: '16px' }}>
         <OrderSummary
@@ -1133,6 +1436,11 @@ export default function OrderTrackClient({
           tableNumber={order.table_number}
         />
       </div>
+
+      {/* ═══ WHATSAPP HELP CTA ═══ */}
+      {whatsappNumber && (
+        <WhatsAppCTA phoneNumber={whatsappNumber} />
+      )}
 
       {/* ═══ STAMP INFO (PRO only) ── show claim card if popup was dismissed ─ */}
       {canShowStampUI && stampPopupDismissed && (
@@ -1148,11 +1456,56 @@ export default function OrderTrackClient({
       )}
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto text-center" style={{ paddingTop: '32px' }}>
+      <footer className="mt-auto text-center" style={{ paddingTop: '28px', paddingBottom: '8px' }}>
+        {/* Track another order link */}
+        <Link
+          href={`/menu/${slug}`}
+          style={{
+            display: 'inline-block',
+            color: '#E63946',
+            fontSize: '13px',
+            fontWeight: 600,
+            textDecoration: 'none',
+            marginBottom: '12px',
+            transition: 'opacity 200ms ease',
+          }}
+        >
+          Track another order →
+        </Link>
         <p style={{ color: '#ABABAB', fontSize: '11px' }}>
           Powered by MenuMate
         </p>
       </footer>
+
+      {/* ═══ FLOATING WHATSAPP FAB ═══ */}
+      {whatsappNumber && (
+        <a
+          href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '20px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: '#25D366',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(37,211,102,0.4)',
+            zIndex: 50,
+            animation: 'wa-fab-pulse 2s ease-out infinite',
+            transition: 'transform 200ms ease, box-shadow 200ms ease',
+          }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#FFFFFF">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </a>
+      )}
 
       {/* ═══ CONFETTI ═══ */}
       {showConfetti && <Confetti />}

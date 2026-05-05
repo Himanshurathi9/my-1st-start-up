@@ -110,6 +110,7 @@ export default async function OrderTrackPage({
       plan={restaurant.plan as Plan}
       initialOrder={orderData}
       stampSettings={stampSettings}
+      whatsappNumber={restaurant.whatsapp_number || null}
     />
   )
 }

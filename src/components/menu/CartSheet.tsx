@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ShoppingBag, MessageCircle, Loader2, CheckCircle2, X, ExternalLink } from 'lucide-react'
+import { ShoppingBag, MessageCircle, Loader2, CheckCircle2, X, ExternalLink, UtensilsCrossed } from 'lucide-react'
 import type { FoodType } from '@/types'
 import { formatPrice } from '@/lib/utils'
 
@@ -337,9 +337,17 @@ export default function CartSheet({
             {/* ── Items ── */}
             <div style={{ marginTop: '8px' }}>
               {cart.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px' }}>
-                  <ShoppingBag size={24} style={{ color: 'var(--m-text-muted)', marginBottom: '10px' }} />
-                  <span style={{ fontSize: '13px', color: 'var(--m-text-muted)' }}>Your cart is empty</span>
+                <div className="empty-cart-state">
+                  <div className="empty-cart-icon">🍕</div>
+                  <h3 className="empty-cart-heading">Your cart is empty</h3>
+                  <p className="empty-cart-desc">Add items from the menu to get started</p>
+                  <button
+                    className="empty-cart-btn"
+                    onClick={onClose}
+                  >
+                    <UtensilsCrossed size={16} strokeWidth={2} />
+                    Browse Menu
+                  </button>
                 </div>
               ) : (
                 <>

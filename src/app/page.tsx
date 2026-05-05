@@ -353,6 +353,7 @@ function Navbar() {
               Log In
             </Link>
             <button
+              className='mm-ripple-btn'
               onClick={() => window.open(waLink('Hi, I want to know more about MenuMate'), '_blank')}
               style={{
                 fontSize: 14,
@@ -470,6 +471,7 @@ function Navbar() {
               Log In
             </Link>
             <button
+              className='mm-ripple-btn'
               onClick={() => {
                 window.open(waLink('Hi, I want to know more about MenuMate'), '_blank')
                 setMobileOpen(false)
@@ -618,6 +620,7 @@ function HeroSection() {
           }}
         >
           <button
+            className='mm-ripple-btn'
             onClick={() => window.open('/menu/brew-house-demo', '_blank')}
             style={{
               background: T.accent,
@@ -637,6 +640,7 @@ function HeroSection() {
             See Live Demo →
           </button>
           <button
+            className='mm-ripple-btn'
             onClick={() =>
               window.open(waLink('Hi, I want to know more about MenuMate'), '_blank')
             }
@@ -1150,18 +1154,21 @@ function HowItWorksSection() {
   const steps = [
     {
       num: '01',
+      badge: 1,
       icon: <ClipboardList size={40} color={T.accent} />,
       title: 'You fill a form',
       desc: 'Fill our simple inquiry form with your restaurant details. We call you within 2 hours.',
     },
     {
       num: '02',
+      badge: 2,
       icon: <UtensilsCrossed size={40} color={T.accent} />,
       title: 'We build your menu',
       desc: 'Send us your menu photos and prices. We set everything up for you — beautifully.',
     },
     {
       num: '03',
+      badge: 3,
       icon: <Zap size={40} color={T.accent} />,
       title: 'Go live in 24 hours',
       desc: 'Print your QR codes, place them on tables, and start receiving orders on WhatsApp.',
@@ -1198,7 +1205,7 @@ function HowItWorksSection() {
         >
           {steps.map((s, i) => (
             <Fragment key={i}>
-              <AnimatedSection delay={i * 120}>
+              <AnimatedSection delay={i * 150}>
                 <div
                   style={{
                     background: T.surface,
@@ -1218,18 +1225,42 @@ function HowItWorksSection() {
                     e.currentTarget.style.borderColor = T.cardBorder
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: 48,
-                      fontWeight: 900,
-                      color: 'rgba(230,57,70,0.2)',
-                      display: 'block',
-                      marginBottom: 12,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {s.num}
-                  </span>
+                  {/* Numbered badge + connecting line container */}
+                  <div className="how-step-number-wrap" style={{ position: 'relative', marginBottom: 16 }}>
+                    <div
+                      className="how-step-number"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: T.accent,
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: 14,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(230,57,70,0.3)',
+                      }}
+                    >
+                      {s.badge}
+                    </div>
+                    {/* Desktop-only dashed connecting line */}
+                    {i < steps.length - 1 && (
+                      <div
+                        className="hidden md:block"
+                        style={{
+                          position: 'absolute',
+                          left: '100%',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: 24,
+                          height: 0,
+                          borderTop: '2px dashed rgba(230,57,70,0.25)',
+                        }}
+                      />
+                    )}
+                  </div>
                   {s.icon}
                   <h3
                     style={{
@@ -1418,37 +1449,49 @@ function DemoSection() {
 function FeaturesSection() {
   const features = [
     {
-      icon: <QrCode size={20} color={T.accent} />,
+      icon: <QrCode size={20} color="#E63946" />,
+      iconBg: 'rgba(230,57,70,0.1)',
+      iconGlow: 'rgba(230,57,70,0.25)',
       title: 'QR Code Per Table',
       desc: 'Each table gets its own QR. Customer scans, table number is automatic. No confusion.',
       badge: null,
     },
     {
-      icon: <MessageCircle size={20} color={T.accent} />,
+      icon: <MessageCircle size={20} color="#25D366" />,
+      iconBg: 'rgba(37,211,102,0.1)',
+      iconGlow: 'rgba(37,211,102,0.25)',
       title: 'WhatsApp Orders',
       desc: 'Every order arrives in your WhatsApp in 3 seconds. With table number and full item list.',
       badge: null,
     },
     {
-      icon: <Award size={20} color={T.accent} />,
+      icon: <Award size={20} color="#F59E0B" />,
+      iconBg: 'rgba(245,158,11,0.1)',
+      iconGlow: 'rgba(245,158,11,0.25)',
       title: 'Loyalty Stamp Cards',
       desc: 'Digital stamp cards bring customers back. 9 orders = 1 free item. Automatic rewards.',
       badge: 'PRO',
     },
     {
-      icon: <ImageIcon size={20} color={T.accent} />,
+      icon: <ImageIcon size={20} color="#3B82F6" />,
+      iconBg: 'rgba(59,130,246,0.1)',
+      iconGlow: 'rgba(59,130,246,0.25)',
       title: 'Promotional Banners',
       desc: 'Run festival offers, happy hours, new launches. Schedule them in advance. Auto on/off.',
       badge: null,
     },
     {
-      icon: <BarChart3 size={20} color={T.accent} />,
+      icon: <BarChart3 size={20} color="#8B5CF6" />,
+      iconBg: 'rgba(139,92,246,0.1)',
+      iconGlow: 'rgba(139,92,246,0.25)',
       title: 'Live Order Dashboard',
       desc: 'See every order live. New → Preparing → Served. Your kitchen stays organized.',
       badge: null,
     },
     {
-      icon: <Smartphone size={20} color={T.accent} />,
+      icon: <Smartphone size={20} color="#10B981" />,
+      iconBg: 'rgba(16,185,129,0.1)',
+      iconGlow: 'rgba(16,185,129,0.25)',
       title: 'No App Needed',
       desc: "Customers open in their browser. No download. Works on any phone, any network.",
       badge: null,
@@ -1456,7 +1499,7 @@ function FeaturesSection() {
   ]
 
   return (
-    <section id="features" style={{ background: `radial-gradient(ellipse 60% 40% at 30% 50%, rgba(52,199,89,0.03) 0%, transparent 60%), ${T.bg}`, padding: '80px clamp(16px, 5vw, 40px)' }}>
+    <section id="features" style={{ background: `radial-gradient(ellipse 60% 40% at 30% 50%, rgba(52,199,89,0.03) 0%, transparent 60%), radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px), ${T.bg}`, backgroundSize: '100% 100%, 24px 24px, 100% 100%', padding: '80px clamp(16px, 5vw, 40px)' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <AnimatedSection>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
@@ -1494,26 +1537,34 @@ function FeaturesSection() {
                   transition: 'all 200ms ease, box-shadow 200ms ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(230,57,70,0.3)'
-                  e.currentTarget.style.background = 'rgba(230,57,70,0.03)'
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(230,57,70,0.15), 0 8px 32px rgba(0,0,0,0.3)'
+                  const card = e.currentTarget
+                  card.style.borderColor = 'rgba(230,57,70,0.3)'
+                  card.style.background = 'rgba(230,57,70,0.03)'
+                  card.style.boxShadow = '0 0 20px rgba(230,57,70,0.15), 0 8px 32px rgba(0,0,0,0.3)'
+                  const iconWrap = card.querySelector('.feature-icon-wrap') as HTMLElement
+                  if (iconWrap) iconWrap.style.boxShadow = `0 0 16px ${f.iconGlow}`
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = T.cardBorder
-                  e.currentTarget.style.background = T.surface
-                  e.currentTarget.style.boxShadow = 'none'
+                  const card = e.currentTarget
+                  card.style.borderColor = T.cardBorder
+                  card.style.background = T.surface
+                  card.style.boxShadow = 'none'
+                  const iconWrap = card.querySelector('.feature-icon-wrap') as HTMLElement
+                  if (iconWrap) iconWrap.style.boxShadow = 'none'
                 }}
               >
                 <div
+                  className="feature-icon-wrap"
                   style={{
                     width: 40,
                     height: 40,
-                    background: 'rgba(230,57,70,0.1)',
+                    background: f.iconBg,
                     borderRadius: 10,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
+                    transition: 'box-shadow 300ms ease',
                   }}
                 >
                   {f.icon}
@@ -1933,6 +1984,7 @@ function CTABanner() {
             flexWrap: 'wrap',
           }}>
             <button
+              className='mm-ripple-btn'
               onClick={() => window.open(waLink('Hi, I want to start with MenuMate!'), '_blank')}
               style={{
                 background: T.accent,
@@ -2274,8 +2326,12 @@ function TestimonialsSection() {
   ]
 
   return (
-    <section style={{ background: `radial-gradient(ellipse 60% 40% at 70% 50%, rgba(230,57,70,0.04) 0%, transparent 60%), ${T.bg}`, padding: '80px clamp(16px, 5vw, 40px)' }}>
+    <section style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(230,57,70,0.04), transparent 60%), radial-gradient(ellipse 60% 40% at 70% 50%, rgba(230,57,70,0.03) 0%, transparent 60%), ${T.bg}`, padding: '80px clamp(16px, 5vw, 40px)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        {/* Divider line */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
+          <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, var(--mm-accent, #E63946), transparent)' }} />
+        </div>
         <AnimatedSection>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <SectionLabel text="TESTIMONIALS" />
@@ -2290,6 +2346,9 @@ function TestimonialsSection() {
             >
               Restaurant owners love it
             </h2>
+            <p style={{ marginTop: 8, fontSize: 16, color: T.textMuted, lineHeight: 1.5 }}>
+              What our customers say
+            </p>
           </div>
         </AnimatedSection>
 
@@ -2315,14 +2374,16 @@ function TestimonialsSection() {
                   position: 'relative',
                   overflow: 'hidden',
                   zIndex: 0,
-                  transition: 'border-color 300ms ease, box-shadow 300ms ease',
+                  transition: 'transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease',
                 }}
                 onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
                   e.currentTarget.style.borderColor = 'rgba(230,57,70,0.3)'
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(230,57,70,0.08)'
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(230,57,70,0.08), 0 4px 16px rgba(0,0,0,0.2)'
                   e.currentTarget.classList.add('testimonial-card-hover')
                 }}
                 onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
                   e.currentTarget.style.borderColor = T.cardBorder
                   e.currentTarget.style.boxShadow = 'none'
                   e.currentTarget.classList.remove('testimonial-card-hover')
@@ -3063,6 +3124,7 @@ I want to get started with MenuMate.`
             {/* Submit */}
             <button
               type="submit"
+              className='mm-ripple-btn'
               disabled={!isFormValid || submitting || showSuccess}
               style={{
                 width: '100%',
@@ -3128,10 +3190,12 @@ function FooterSection() {
 
   return (
     <footer
+      className="footer-section"
       style={{
-        background: '#080808',
+        background: `radial-gradient(circle, rgba(255,255,255,0.02) 1px, transparent 1px), #080808`,
+        backgroundSize: '20px 20px',
         borderTop: '1px solid transparent',
-        borderImage: 'linear-gradient(90deg, transparent, rgba(230,57,70,0.3), transparent) 1',
+        borderImage: 'linear-gradient(90deg, transparent, rgba(230,57,70,0.4), transparent) 1',
         padding: '60px clamp(16px, 5vw, 40px) 32px',
       }}
     >
@@ -3167,20 +3231,25 @@ function FooterSection() {
                 <a
                   key={l.href}
                   href={l.href}
+                  className="footer-nav-link"
                   style={{
                     fontSize: 14,
                     color: T.textSecondary,
                     textDecoration: 'none',
                     transition: 'color 200ms, transform 200ms ease',
                     display: 'inline-block',
+                    paddingBottom: 2,
+                    borderBottom: '1px solid transparent',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = T.textPrimary
                     e.currentTarget.style.transform = 'translateX(4px)'
+                    e.currentTarget.style.borderBottomColor = T.textPrimary
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = T.textSecondary
                     e.currentTarget.style.transform = 'translateX(0)'
+                    e.currentTarget.style.borderBottomColor = 'transparent'
                   }}
                 >
                   {l.label}
@@ -3259,15 +3328,19 @@ function FooterSection() {
         />
 
         {/* Copyright */}
-        <p
-          style={{
-            textAlign: 'center',
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.25)',
-          }}
-        >
-          © 2024 MenuMate. All rights reserved.
-        </p>
+        <div style={{ textAlign: 'center' }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: 'rgba(255,255,255,0.25)',
+            }}
+          >
+            © 2024 MenuMate. All rights reserved.
+          </p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>
+            Made with ❤️ in Surat, India
+          </p>
+        </div>
       </div>
     </footer>
   )
@@ -3489,27 +3562,137 @@ function ScrollToTopButton() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   LOADING SKELETON
+   ═══════════════════════════════════════════════════════════ */
+function LandingSkeleton() {
+  const skel = (w: string, h: string, r = 8): React.CSSProperties => ({
+    width: w,
+    height: h,
+    borderRadius: r,
+    background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'mmSkelShimmer 1.5s ease-in-out infinite',
+  })
+
+  return (
+    <div style={{ background: T.bg, minHeight: '100vh' }}>
+      {/* Navbar skeleton */}
+      <div style={{
+        height: 64,
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '0 clamp(16px, 5vw, 40px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={skel(20, 20, 4)} />
+          <div style={skel(90, 20, 4)} />
+        </div>
+        <div style={{ display: 'flex', gap: 32 }}>
+          {[1, 2, 3, 4, 5].map(i => <div key={i} style={skel(80, 14, 4)} />)}
+        </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={skel(36, 36, '50%')} />
+          <div style={skel(48, 14, 100)} />
+          <div style={skel(100, 36, 100)} />
+        </div>
+      </div>
+
+      {/* Hero skeleton */}
+      <div style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '100px 24px 60px',
+      }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ ...skel(220, 28, 100), margin: '0 auto 24px' }} />
+          <div style={{ ...skel(500, 48, 8), margin: '0 auto 16px', maxWidth: '100%' }} />
+          <div style={{ ...skel(350, 20, 8), margin: '0 auto 40px' }} />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+            <div style={skel(160, 48, 100)} />
+            <div style={skel(200, 48, 100)} />
+          </div>
+          {/* Phone mockup skeleton */}
+          <div style={{ marginTop: 48, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ ...skel('min(280px, 70vw)', 400, 40) }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Features skeleton (2x3 grid) */}
+      <div style={{ padding: '80px clamp(16px, 5vw, 40px)', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ ...skel(120, 14, 4), margin: '0 auto 12px' }} />
+        <div style={{ ...skel(300, 36, 8), margin: '0 auto 48px' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} style={{ ...skel('100%', 160, 16) }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Stats skeleton (4 columns) */}
+      <div style={{ padding: '80px clamp(16px, 5vw, 40px)', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} style={{ ...skel('100%', 100, 16), textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <div style={skel(80, 36, 8)} />
+              <div style={skel(140, 14, 4)} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer skeleton */}
+      <div style={{ padding: '60px clamp(16px, 5vw, 40px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
+          {[1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ ...skel(80, 14, 4), marginBottom: 16 }} />
+              {[1, 2, 3, 4].map(j => (
+                <div key={j} style={{ ...skel('80%', 14, 4), marginBottom: 10 }} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
    MAIN LANDING PAGE
    ═══════════════════════════════════════════════════════════ */
 export default function LandingPage() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 600)
+    return () => clearTimeout(t)
+  }, [])
+
+  if (isLoading) return <LandingSkeleton />
+
   return (
-    <div style={{ background: T.bg, color: T.textPrimary }}>
+    <div className="mm-page-enter" style={{ background: T.bg, color: T.textPrimary }}>
       <Navbar />
-      <HeroSection />
-      <TrustedBySection />
-      <ProblemSolutionSection />
-      <HowItWorksSection />
-      <DemoSection />
-      <FeaturesSection />
-      <ComparisonSection />
-      <CTABanner />
-      <RestaurantShowcaseSection />
-      <PricingSection />
-      <TestimonialsSection />
-      <StatsCounterSection />
-      <FAQSection />
-      <InquiryForm />
-      <FooterSection />
+      <AnimatedSection><HeroSection /></AnimatedSection>
+      <AnimatedSection delay={100}><TrustedBySection /></AnimatedSection>
+      <AnimatedSection delay={200}><ProblemSolutionSection /></AnimatedSection>
+      <AnimatedSection delay={300}><HowItWorksSection /></AnimatedSection>
+      <AnimatedSection delay={400}><DemoSection /></AnimatedSection>
+      <AnimatedSection delay={500}><FeaturesSection /></AnimatedSection>
+      <AnimatedSection delay={600}><ComparisonSection /></AnimatedSection>
+      <AnimatedSection delay={700}><CTABanner /></AnimatedSection>
+      <AnimatedSection delay={800}><RestaurantShowcaseSection /></AnimatedSection>
+      <AnimatedSection delay={900}><PricingSection /></AnimatedSection>
+      <AnimatedSection delay={1000}><TestimonialsSection /></AnimatedSection>
+      <AnimatedSection delay={1100}><StatsCounterSection /></AnimatedSection>
+      <AnimatedSection delay={1200}><FAQSection /></AnimatedSection>
+      <AnimatedSection delay={1300}><InquiryForm /></AnimatedSection>
+      <AnimatedSection delay={1400}><FooterSection /></AnimatedSection>
       <ScrollToTopButton />
       <CookieConsent />
 
@@ -3667,6 +3850,71 @@ export default function LandingPage() {
         }
         .inquiry-success-icon {
           animation: inquirySuccessPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ── How-it-works step number fade in ── */
+        @keyframes stepBadgePop {
+          0% { opacity: 0; transform: scale(0.5); }
+          60% { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .how-step-number {
+          animation: stepBadgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* ── Footer nav link underline animation ── */
+        .footer-nav-link {
+          transition: color 200ms ease, transform 200ms ease, border-bottom-color 200ms ease;
+          border-bottom-width: 1px;
+          border-bottom-style: solid;
+          border-bottom-color: transparent;
+        }
+
+        /* ── Feature icon glow ring on hover ── */
+        .feature-icon-wrap {
+          transition: box-shadow 300ms ease;
+        }
+
+        /* ── Page enter fade-in ── */
+        .mm-page-enter {
+          animation: mmPageEnter 500ms ease-out forwards;
+        }
+        @keyframes mmPageEnter {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        /* ── Skeleton shimmer ── */
+        @keyframes mmSkelShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        /* ── Button ripple effect ── */
+        .mm-ripple-btn {
+          position: relative;
+          overflow: hidden;
+        }
+        .mm-ripple-btn::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(230, 57, 70, 0.35);
+          transform: translate(-50%, -50%);
+          opacity: 0;
+          transition: width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .mm-ripple-btn:active::after {
+          width: 300px;
+          height: 300px;
+          opacity: 1;
+          transition: width 0s, height 0s, opacity 0s;
         }
       `}</style>
     </div>
