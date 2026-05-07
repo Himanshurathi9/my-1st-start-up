@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Eye, EyeOff, AlertCircle, Loader2, X, Star, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { env } from '@/lib/env'
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER || '917425959111'
 
 /* ── Particle data (deterministic on server, enhanced on client) ── */
 function generateParticles() {
@@ -701,7 +701,7 @@ export default function LoginPage() {
             >
               <span style={{ fontSize: 14, color: '#6E6E73' }}>New restaurant? </span>
               <Link
-                href={`https://wa.me/${env.WHATSAPP_CONTACT_NUMBER}?text=${encodeURIComponent('Hi, I want to know more about MenuMate')}`}
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi, I want to know more about MenuMate')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

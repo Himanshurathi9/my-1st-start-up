@@ -32,10 +32,10 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 
-/* ── WhatsApp helper (uses env.ts — NO hardcoded numbers) ── */
-import { env } from '@/lib/env'
+/* ── WhatsApp helper (uses NEXT_PUBLIC_ env — NO hardcoded numbers) ── */
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER || '917425959111'
 const waLink = (msg: string) =>
-  `https://wa.me/${env.WHATSAPP_CONTACT_NUMBER}?text=${encodeURIComponent(msg)}`
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
 
 /* ── Design tokens (CSS variable-backed for theme switching) ── */
 const T = {
