@@ -14,6 +14,15 @@ import { getTheme } from '@/lib/themes'
 import { formatPrice } from '@/lib/utils'
 import type { Restaurant, Category, MenuItem, FoodType, Banner, StampSettings } from '@/types'
 import '@/styles/menu-themes.css'
+import SoundToggle from '@/components/ui/SoundToggle'
+import {
+  touchUnlock,
+  playMenuOpen,
+  playCategorySwitch,
+  playAddToCart,
+  playRemoveFromCart,
+  playCartOpen,
+} from '@/lib/soundManager'
 
 // ─── Types ────────────────────────────────────────────────────
 interface MenuItemWithCategory extends MenuItem {
@@ -235,6 +244,15 @@ export default function PublicMenuClient({
   // Hydration gate — prevent mismatch during SSR
   useEffect(() => { setIsHydrated(true) }, [])
 
+  // ─── Sound: play menu open once per session ───────────────────
+  useEffect(() => {
+    if (!isHydrated) return
+    // Small delay to ensure AudioContext can be created post-hydration
+    const t = setTimeout(() => playMenuOpen(), 200)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated])
+
   // Persist cart
   useEffect(() => { saveCart(restaurant.slug, cart) }, [cart, restaurant.slug])
 
@@ -311,11 +329,14 @@ export default function PublicMenuClient({
 
   // ─── Cart handlers ──────────────────────────────────────────
   const addToCart = useCallback((item: MenuItemWithCategory) => {
+    touchUnlock() // unlock AudioContext on user gesture
     setCart((prev) => {
       const ex = prev.find((c) => c.menuItemId === item.id)
       if (ex) return prev.map((c) => (c.menuItemId === item.id ? { ...c, quantity: c.quantity + 1 } : c))
       return [...prev, { menuItemId: item.id, name: item.name, price: item.price, quantity: 1, foodType: item.food_type }]
     })
+    // Sound 3 — woody "plonk" on cart add
+    playAddToCart()
     // Trigger +1 float animation
     setCartFloatId((id) => id + 1)
     // Trigger badge pulse
@@ -324,11 +345,14 @@ export default function PublicMenuClient({
   }, [])
 
   const removeFromCart = useCallback((menuItemId: string) => {
+    touchUnlock()
     setCart((prev) => {
       const ex = prev.find((c) => c.menuItemId === menuItemId)
       if (ex && ex.quantity > 1) return prev.map((c) => (c.menuItemId === menuItemId ? { ...c, quantity: c.quantity - 1 } : c))
       return prev.filter((c) => c.menuItemId !== menuItemId)
     })
+    // Sound 4 — softer reversed bead lift
+    playRemoveFromCart()
   }, [])
 
   const handleCartAdd = useCallback(
@@ -432,6 +456,8 @@ export default function PublicMenuClient({
 
   // ─── Scroll to category section on pill click ───────────────
   const handleCategoryClick = useCallback((categoryId: string) => {
+    touchUnlock()
+    playCategorySwitch() // Sound 2 — paper slide
     if (categoryId === 'all') {
       // Scroll to top of content
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -662,7 +688,11 @@ export default function PublicMenuClient({
           {/* Cart icon */}
           <button
             className="menu-theme-btn"
-            onClick={() => setCartOpen(true)}
+            onClick={() => {
+              touchUnlock()
+              playCartOpen() // Sound 5 — airy upward sweep
+              setCartOpen(true)
+            }}
             aria-label="Cart"
             style={{ position: 'relative' }}
           >
@@ -701,6 +731,9 @@ export default function PublicMenuClient({
               <X size={17} strokeWidth={2} />
             </button>
           )}
+
+          {/* Sound toggle — accessible but non-prominent */}
+          <SoundToggle context="customer" variant="menu" />
         </div>
       </header>
 

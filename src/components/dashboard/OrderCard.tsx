@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import type { Order } from '@/types'
 import { formatPrice } from '@/lib/utils'
+import { touchUnlock, playCardSlide } from '@/lib/soundManager'
 
 interface OrderCardProps {
   order: Order
@@ -202,7 +203,12 @@ export default function OrderCard({
           {/* Action button */}
           {action && onAdvanceStatus && (
             <button
-              onClick={() => onAdvanceStatus(order.id)}
+              onClick={() => {
+                touchUnlock()
+                // Sound 13 — card slide on wood (pitch rises per stage)
+                playCardSlide(order.status === 'NEW' ? 'to-preparing' : 'to-served')
+                onAdvanceStatus(order.id)
+              }}
               disabled={loadingStatus}
               className="btn min-h-[40px] py-2 px-5 text-sm font-semibold animate-btn-press"
               style={{ background: action.bg, color: action.color, boxShadow: 'none' }}

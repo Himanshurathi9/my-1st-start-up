@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import type { Category, MenuItem, FoodType, Restaurant } from '@/types'
 import { formatPrice, handleImgError } from '@/lib/utils'
 import ImageUpload from '@/components/ui/ImageUpload'
+import { touchUnlock, playOutOfStock, playRestoreAvailable, playPhotoUploaded } from '@/lib/soundManager'
 
 const SUGGESTIONS = ['Starters', 'Mains', 'Drinks', 'Desserts', 'Snacks']
 
@@ -89,8 +90,17 @@ function ItemCard({
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    touchUnlock()
     const newVal = !item.is_available
     setToggling(true)
+
+    // Sound 15a/15b — muted thud (out of stock) or airy lift (available)
+    if (newVal) {
+      playRestoreAvailable()
+    } else {
+      playOutOfStock()
+    }
+
     try {
       const res = await fetch('/api/menu-items/availability', {
         method: 'PATCH',
@@ -350,7 +360,10 @@ function ItemSheetInner({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* 1. Image */}
             <ImageUpload
-              onUpload={setImageUrl}
+              onUpload={(url) => {
+                setImageUrl(url)
+                playPhotoUploaded() // Sound 14 — fwhip + resolved tone
+              }}
               folder="menu-items"
               currentImage={imageUrl}
               label="Add food photo"

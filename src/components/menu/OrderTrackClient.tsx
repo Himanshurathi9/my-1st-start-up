@@ -6,6 +6,13 @@ import { Receipt, ChefHat, Star, Check, Award, Phone, User, Loader2, Target, Cop
 import toast from 'react-hot-toast'
 import type { OrderStatus, OrderItem, Plan, StampSettings } from '@/types'
 import { formatPrice } from '@/lib/utils'
+import {
+  playPreparingStart,
+  playOrderServed,
+  playStampEarned,
+  playHalfwayMilestone,
+  playRewardUnlocked,
+} from '@/lib/soundManager'
 
 // ─── Types ─────────────────────────────────────────────────────
 interface OrderStatusData {
@@ -183,17 +190,23 @@ function StampEarnedPopup({
       setResult(json)
 
       if (json.reward_earned) {
+        // Sound 10 — full celebration: stamp + cascading chimes
+        playRewardUnlocked()
         toast.success('🎉 Reward unlocked!', { duration: 5000 })
         if (json.whatsapp_notification_url) {
           window.open(json.whatsapp_notification_url, '_blank')
         }
-      } else {
+      } else if (json.halfway) {
+        // Sound 9 — two-tone gentle chime (halfway milestone)
+        playHalfwayMilestone()
         toast.success(`Stamp collected! ${json.current_count}/${json.stamps_required} 🎉`)
-        if (json.halfway) {
-          setTimeout(() => {
-            toast('🎯 Halfway there! Keep going!', { icon: '🔥', duration: 3000 })
-          }, 1000)
-        }
+        setTimeout(() => {
+          toast('🎯 Halfway there! Keep going!', { icon: '🔥', duration: 3000 })
+        }, 1000)
+      } else {
+        // Sound 8 — ink stamp thud (single stamp earned)
+        playStampEarned()
+        toast.success(`Stamp collected! ${json.current_count}/${json.stamps_required} 🎉`)
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to collect stamp'
@@ -1260,14 +1273,20 @@ export default function OrderTrackClient({
 
         const prevStatus = lastStatusRef.current
 
-        // ── Detect status change to SERVED → confetti ──
+        // ── Detect status change to SERVED → confetti + sound ──
         if (data.status === 'SERVED' && !hasFiredConfetti.current) {
           hasFiredConfetti.current = true
           setShowConfetti(true)
+          playOrderServed() // Sound 7b — single service bell ding
           if (pollRef.current) {
             clearInterval(pollRef.current)
             pollRef.current = null
           }
+        }
+
+        // ── Detect NEW → PREPARING → sizzle sound ──
+        if (data.status === 'PREPARING' && prevStatus === 'NEW') {
+          playPreparingStart() // Sound 7a — sizzle-snap, kitchen-y
         }
 
         // ── Detect status change to PREPARING → stamp popup (PRO only) ──

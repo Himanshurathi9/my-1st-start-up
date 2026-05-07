@@ -31,6 +31,14 @@ import toast from 'react-hot-toast'
 import type { Restaurant } from '@/types'
 import { formatPrice, isPlanExpired, daysUntilExpiry } from '@/lib/utils'
 import AdminNotificationListener from '@/components/menu/AdminNotificationListener'
+import SoundToggle from '@/components/ui/SoundToggle'
+import {
+  touchUnlock,
+  playRestaurantOpen,
+  playRestaurantClose,
+  playNewOrder,
+  acknowledgeNewOrder,
+} from '@/lib/soundManager'
 
 interface RestaurantData {
   restaurant: Restaurant
@@ -379,7 +387,7 @@ function DashboardSearch() {
                 type: 'menu',
                 id: item.id,
                 label: item.name,
-                sublabel: `${item.category_name || 'Menu'} · ₹${formatPrice(item.price)}`,
+                sublabel: `${item.category_name || 'Menu'} · ${formatPrice(item.price)}`,
                 href: '/dashboard/menu',
               })
             })
@@ -408,7 +416,7 @@ function DashboardSearch() {
                 type: 'order',
                 id: order.id,
                 label: `#${orderNum}`,
-                sublabel: `${order.table_number ? `Table ${order.table_number}` : 'Takeaway'} · ₹${formatPrice(order.total_amount)}`,
+                sublabel: `${order.table_number ? `Table ${order.table_number}` : 'Takeaway'} · ${formatPrice(order.total_amount)}`,
                 href: '/dashboard/orders',
               })
             })
@@ -660,12 +668,13 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [fetchRestaurant])
 
-  // Shake bell when new order count increases
+  // Shake bell + play Sound 11 when new order count increases
   useEffect(() => {
     const current = data?.newOrdersCount ?? 0
     if (prevOrdersCountRef.current > 0 && current > prevOrdersCountRef.current) {
       prevOrdersCountRef.current = current // Update ref before async work
       setBellShaking(true)
+      playNewOrder() // Sound 11 — hotel service bell, repeats 3x if unacknowledged
       const timer = setTimeout(() => setBellShaking(false), 600)
       return () => clearTimeout(timer)
     }
@@ -675,7 +684,15 @@ export default function DashboardPage() {
   const handleToggle = async () => {
     if (!data || toggling) return
     const newStatus = !data.restaurant.is_open
+    touchUnlock()
     setToggling(true)
+
+    // Sound 12a/12b — mechanical click-thunk before API call (immediate feedback)
+    if (newStatus) {
+      playRestaurantOpen()
+    } else {
+      playRestaurantClose()
+    }
 
     try {
       const res = await fetch('/api/restaurant', {
@@ -754,7 +771,10 @@ export default function DashboardPage() {
 
         {/* Notification Bell */}
         <div
-          onClick={() => router.push('/dashboard/orders')}
+          onClick={() => {
+            acknowledgeNewOrder() // Stop Sound 11 from repeating
+            router.push('/dashboard/orders')
+          }}
           style={{
             position: 'relative',
             width: '36px',
@@ -810,6 +830,9 @@ export default function DashboardPage() {
             </span>
           )}
         </div>
+
+        {/* Sound toggle for dashboard — accessible but non-prominent */}
+        <SoundToggle context="dashboard" variant="menu" />
 
       </header>
 
@@ -1101,7 +1124,7 @@ export default function DashboardPage() {
                   icon={<DollarSign className="w-[16px] h-[16px]" style={{ color: '#4ade80' }} />}
                   iconBg="rgba(34,197,94,0.12)"
                   label="Today's Revenue"
-                  value={`₹${formatPrice(todayRevenue)}`}
+                  value={formatPrice(todayRevenue)}
                   trend={{ value: 8, positive: true }}
                   gradientBorder="linear-gradient(135deg, #22c55e, #10b981)"
                 />
@@ -1109,7 +1132,7 @@ export default function DashboardPage() {
                   icon={<BarChart3 className="w-[16px] h-[16px]" style={{ color: '#fbbf24' }} />}
                   iconBg="rgba(245,158,11,0.12)"
                   label="Avg Order Value"
-                  value={todayOrders > 0 ? `₹${formatPrice(Math.round(todayRevenue / todayOrders))}` : '₹0'}
+                  value={todayOrders > 0 ? formatPrice(Math.round(todayRevenue / todayOrders)) : '₹0'}
                   trend={{ value: 5, positive: false }}
                   gradientBorder="linear-gradient(135deg, #f59e0b, #f97316)"
                 />

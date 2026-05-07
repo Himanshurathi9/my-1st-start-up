@@ -43,6 +43,7 @@ import {
 import { signOut } from 'next-auth/react'
 import type { Restaurant, RestaurantTable, StampSettings, Customer } from '@/types'
 import { handleImgError } from '@/lib/utils'
+import SoundToggle from '@/components/ui/SoundToggle'
 
 // ────────────────────────────
 // Types
@@ -60,17 +61,6 @@ interface StampSettingsData {
   customers: Customer[]
 }
 
-interface ThemeOption {
-  id: string
-  name: string
-  preview: {
-    bg: string
-    cardBg: string
-    textColor: string
-    accent: string
-    subtitleColor: string
-  }
-}
 
 // ────────────────────────────
 // Constants for new sections
@@ -119,28 +109,6 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
-const THEMES: ThemeOption[] = [
-  {
-    id: 'dark',
-    name: 'Dark Luxury',
-    preview: { bg: '#09090B', cardBg: '#131316', textColor: '#FAFAFA', accent: '#F59E0B', subtitleColor: '#A1A1AA' },
-  },
-  {
-    id: 'emerald',
-    name: 'Emerald Green',
-    preview: { bg: '#060D09', cardBg: '#0D1A14', textColor: '#F0FDF4', accent: '#10B981', subtitleColor: '#86EFAC' },
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset Orange',
-    preview: { bg: '#0C0806', cardBg: '#181310', textColor: '#FFF7ED', accent: '#F97316', subtitleColor: '#FDBA74' },
-  },
-  {
-    id: 'royal',
-    name: 'Royal Purple',
-    preview: { bg: '#08060F', cardBg: '#120F1E', textColor: '#FAF5FF', accent: '#A855F7', subtitleColor: '#C4B5FD' },
-  },
-]
 
 // ────────────────────────────
 // Skeleton Loader
@@ -252,80 +220,6 @@ function SettingsRow({
     </Wrapper>
   )
 }
-
-// ────────────────────────────
-// Theme Preview Card
-// ────────────────────────────
-
-function ThemePreviewCard({
-  theme,
-  isSelected,
-  onClick,
-}: {
-  theme: ThemeOption
-  isSelected: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex-shrink-0 w-[140px] rounded-2xl overflow-hidden transition-all duration-200"
-      style={{
-        border: isSelected ? '2px solid var(--dash-accent)' : '2px solid var(--dash-border)',
-        boxShadow: isSelected ? '0 0 20px rgba(34, 197, 94, 0.25)' : 'none',
-        background: 'var(--dash-surface)',
-        cursor: 'pointer',
-        padding: '0',
-      }}
-    >
-      {/* Mini preview area */}
-      <div
-        className="relative h-[80px] w-full flex flex-col items-center justify-center gap-1 overflow-hidden"
-        style={{ background: theme.preview.bg }}
-      >
-        {/* Mock header bar */}
-        <div
-          className="w-[60%] h-[6px] rounded-full"
-          style={{ background: theme.preview.textColor, opacity: 0.7 }}
-        />
-        {/* Mock cards */}
-        <div className="flex gap-1.5 mt-1.5">
-          <div
-            className="w-[28px] h-[28px] rounded-lg"
-            style={{ background: theme.preview.cardBg }}
-          />
-          <div
-            className="w-[28px] h-[28px] rounded-lg"
-            style={{ background: theme.preview.cardBg }}
-          />
-          <div
-            className="w-[28px] h-[28px] rounded-lg"
-            style={{ background: theme.preview.cardBg }}
-          />
-        </div>
-        {/* Selected checkmark */}
-        {isSelected && (
-          <div
-            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--dash-accent)' }}
-          >
-            <Check className="w-3 h-3" style={{ color: '#fff' }} />
-          </div>
-        )}
-      </div>
-      {/* Theme name */}
-      <div className="py-2 px-3 flex items-center justify-center" style={{ background: 'var(--dash-surface-2)' }}>
-        <span className="text-[11px] font-semibold truncate" style={{ color: 'var(--dash-text-2)' }}>
-          {theme.name}
-        </span>
-      </div>
-    </button>
-  )
-}
-
-// ────────────────────────────
-// Dark Toggle Component
-// ────────────────────────────
 
 // ────────────────────────────
 // Dropdown Select Component
@@ -445,9 +339,7 @@ export default function SettingsPage() {
   const [stampsRequired, setStampsRequired] = useState(9)
   const [isActive, setIsActive] = useState(false)
 
-  // Theme state
-  const [selectedTheme, setSelectedTheme] = useState<string>('dark')
-  const [themeSaving, setThemeSaving] = useState(false)
+  // Theme state removed
   const [whatsappNumber, setWhatsappNumber] = useState('')
   const [whatsappSaving, setWhatsappSaving] = useState(false)
 
@@ -569,9 +461,7 @@ export default function SettingsPage() {
       // Explicitly clear if field is empty in DB
       setWhatsappNumber('')
     }
-    if (data?.restaurant?.theme) {
-      setSelectedTheme(data.restaurant.theme)
-    }
+    // theme sync removed
     // Sync profile fields from data
     if (data?.restaurant?.name) {
       setEditProfileName(data.restaurant.name)
@@ -723,27 +613,6 @@ export default function SettingsPage() {
       setWhatsappSaving(false)
     }
   }, [whatsappNumber, fetchTables])
-
-  // ─── Theme handler ───
-  const handleThemeSelect = useCallback(async (themeId: string) => {
-    setSelectedTheme(themeId)
-    setThemeSaving(true)
-    try {
-      const res = await fetch('/api/restaurant', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: themeId }),
-      })
-      if (res.ok) {
-        toast.success('Theme updated!')
-      }
-      // If it fails, keep the local state — API may not support theme yet
-    } catch {
-      // Local state is already set, that's fine
-    } finally {
-      setThemeSaving(false)
-    }
-  }, [])
 
   // ─── Stamp settings handlers ───
   const handleSaveStampSettings = useCallback(async () => {
@@ -1106,43 +975,6 @@ export default function SettingsPage() {
           </SectionCard>
         </section>
 
-        {/* ═══ SECTION 2 — MENU THEME ═══ */}
-        <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '60ms' }}>
-          <SectionLabel>
-            <span className="flex items-center gap-2">
-              Menu Theme
-              <Palette className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
-            </span>
-            <span className="dash-badge-pro text-[9px] font-bold px-2 py-0.5 rounded-full ml-1">CUSTOMIZE</span>
-          </SectionLabel>
-
-          <SectionCard className="p-4">
-            {/* Scrollable theme row */}
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ touchAction: 'pan-x' }}>
-              {THEMES.map((theme) => (
-                <ThemePreviewCard
-                  key={theme.id}
-                  theme={theme}
-                  isSelected={selectedTheme === theme.id}
-                  onClick={() => handleThemeSelect(theme.id)}
-                />
-              ))}
-            </div>
-
-            {/* Selected theme name with indicator */}
-            <div className="flex items-center justify-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--dash-border)' }}>
-              {themeSaving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--dash-accent)' }} />
-              ) : (
-                <Check className="w-3.5 h-3.5" style={{ color: 'var(--dash-accent)' }} />
-              )}
-              <span className="text-xs font-semibold" style={{ color: 'var(--dash-text-2)' }}>
-                {THEMES.find(t => t.id === selectedTheme)?.name || 'Dark Luxury'} theme active
-              </span>
-            </div>
-          </SectionCard>
-        </section>
-
         {/* ═══ SECTION 2b — NOTIFICATION PREFERENCES ═══ */}
         <section className="mt-6 animate-dash-section-enter" style={{ animationDelay: '90ms' }}>
           <SectionLabel>
@@ -1195,7 +1027,7 @@ export default function SettingsPage() {
               <DashToggle active={notifPrefs.dailySummary} onToggle={() => updateNotifPref('dailySummary', !notifPrefs.dailySummary)} />
             </div>
 
-            {/* Sound Alerts */}
+            {/* Sound Alerts — wired to soundManager */}
             <div className="flex items-center justify-between" style={{ padding: '14px 16px', minHeight: '52px' }}>
               <div className="flex items-center gap-3 min-w-0">
                 <div
@@ -1206,14 +1038,14 @@ export default function SettingsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium truncate" style={{ color: 'var(--dash-text)', fontSize: '15px' }}>
-                    Sound Alerts
+                    ASMR Sound Effects
                   </p>
                   <p className="text-[11px] mt-0.5" style={{ color: 'var(--dash-text-3)' }}>
-                    Play a sound for new orders
+                    Premium audio feedback for all actions
                   </p>
                 </div>
               </div>
-              <DashToggle active={notifPrefs.soundAlerts} onToggle={() => updateNotifPref('soundAlerts', !notifPrefs.soundAlerts)} />
+              <SoundToggle context="dashboard" variant="settings" />
             </div>
           </SectionCard>
         </section>

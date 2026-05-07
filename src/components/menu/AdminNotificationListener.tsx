@@ -32,16 +32,8 @@ function preloadAudioFiles() {
   }
 }
 
-// Preload on first user interaction (browser autoplay policy)
-if (typeof document !== 'undefined') {
-  const doPreload = () => {
-    preloadAudioFiles()
-    document.removeEventListener('click', doPreload)
-    document.removeEventListener('touchstart', doPreload)
-  }
-  document.addEventListener('click', doPreload, { once: false, passive: true })
-  document.addEventListener('touchstart', doPreload, { once: false, passive: true })
-}
+// NOTE: Audio preload is triggered inside the component via useEffect,
+// not at module level — module-level document access breaks Turbopack SSR parsing.
 
 // ─── Sound playback ───────────────────────────────────────────
 function playNotificationSound(type: 'waiter' | 'bill') {
@@ -126,15 +118,31 @@ function NotificationToast({ type, tableNumber, restaurantName }: { type: string
 export default function AdminNotificationListener({ restaurantId }: AdminNotificationListenerProps) {
   const [soundsEnabled, setSoundsEnabled] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
-  const [lastPollTime, setLastPollTime] = useState(new Date().toISOString())
+  const lastPollTimeRef = useRef(new Date().toISOString())
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wsRef = useRef<unknown>(null)
+  // Guard against duplicate toasts from React Strict Mode double-invocation
+  const toastCooldownRef = useRef(false)
 
-  // Load sound preference on mount
+  // Load sound preference on mount + register preload listeners safely in browser
   useEffect(() => {
     const savedPref = loadSoundPref()
     setSoundsEnabled(savedPref)
     console.log('[AdminListener] Sound pref loaded:', savedPref, 'restaurantId:', restaurantId)
+
+    // Register audio preload on first user interaction (safe — inside useEffect, client only)
+    const doPreload = () => {
+      preloadAudioFiles()
+      document.removeEventListener('click', doPreload)
+      document.removeEventListener('touchstart', doPreload)
+    }
+    document.addEventListener('click', doPreload, { passive: true })
+    document.addEventListener('touchstart', doPreload, { passive: true })
+
+    return () => {
+      document.removeEventListener('click', doPreload)
+      document.removeEventListener('touchstart', doPreload)
+    }
   }, [restaurantId])
 
   const handleNotification = useCallback((data: { id?: string; type: string; table_number: number | null; restaurant_name: string }) => {
@@ -162,16 +170,18 @@ export default function AdminNotificationListener({ restaurantId }: AdminNotific
     )
   }, [soundsEnabled])
 
-  // Toggle sounds
+  // Toggle sounds — guarded against duplicate toasts
   const toggleSounds = useCallback(() => {
+    if (toastCooldownRef.current) return
+    toastCooldownRef.current = true
+    setTimeout(() => { toastCooldownRef.current = false }, 800)
+
     const newValue = !soundsEnabled
     setSoundsEnabled(newValue)
     saveSoundPref(newValue)
     console.log('[AdminListener] Sound toggled:', newValue)
     if (newValue) {
-      // Enable audio and play test sound
       preloadAudioFiles()
-      // Play waiter sound as confirmation
       setTimeout(() => playNotificationSound('waiter'), 100)
       toast.success('🔔 Notification sounds enabled!')
     } else {
@@ -233,18 +243,22 @@ export default function AdminNotificationListener({ restaurantId }: AdminNotific
     }
   }, [restaurantId, handleNotification])
 
+  // Stable ref to handleNotification — prevents polling interval from restarting on every soundsEnabled change
+  const handleNotificationRef = useRef(handleNotification)
+  useEffect(() => { handleNotificationRef.current = handleNotification }, [handleNotification])
+
   // Polling fallback (every 5 seconds)
   useEffect(() => {
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/notifications?restaurant_id=${restaurantId}&since=${encodeURIComponent(lastPollTime)}`)
+        const res = await fetch(`/api/notifications?restaurant_id=${restaurantId}&since=${encodeURIComponent(lastPollTimeRef.current)}`)
         if (!res.ok) return
         const data = await res.json()
         if (data.notifications && data.notifications.length > 0) {
           data.notifications.forEach((n: { id: string; type: string; table_number: number | null; restaurant_name: string }) => {
-            handleNotification(n)
+            handleNotificationRef.current(n)
           })
-          setLastPollTime(new Date().toISOString())
+          lastPollTimeRef.current = new Date().toISOString()
         }
       } catch {
         // Poll failed silently
@@ -254,7 +268,7 @@ export default function AdminNotificationListener({ restaurantId }: AdminNotific
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
     }
-  }, [restaurantId, lastPollTime, handleNotification])
+  }, [restaurantId])
 
   // Persistent floating toggle button
   return (

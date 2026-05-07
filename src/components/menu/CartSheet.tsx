@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ShoppingBag, MessageCircle, Loader2, CheckCircle2, X, ExternalLink, UtensilsCrossed } from 'lucide-react'
 import type { FoodType } from '@/types'
 import { formatPrice } from '@/lib/utils'
+import { touchUnlock, playOrderPlaced } from '@/lib/soundManager'
 
 // ─── Types ────────────────────────────────────────────────────
 interface CartItem {
@@ -149,6 +150,7 @@ export default function CartSheet({
   // ── Place order ──
   const handlePlaceOrder = async () => {
     if (placing || cart.length === 0) return
+    touchUnlock()
     setPlacing(true)
     setError(null)
 
@@ -183,6 +185,9 @@ export default function CartSheet({
 
       // ✅ IMMEDIATELY clear cart on success
       onOrderPlaced()
+
+      // Sound 6 — 3 ascending warm chimes, synced with success animation
+      playOrderPlaced()
 
       setResult({
         orderId: data.order_id,
