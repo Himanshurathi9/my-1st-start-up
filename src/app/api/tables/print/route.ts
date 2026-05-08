@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import QRCode from 'qrcode'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 
 // GET: Return print-ready HTML page with all QR codes
 export async function GET() {
@@ -38,7 +39,7 @@ export async function GET() {
       return new NextResponse('No tables found. Generate QR codes first.', { status: 404 })
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const menuUrl = `${baseUrl}/menu/${restaurant.slug}`
 
     // Generate master QR for print (walk-in / takeaway)

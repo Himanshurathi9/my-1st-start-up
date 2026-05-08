@@ -53,7 +53,7 @@ export const env = {
   CLOUDINARY_CLOUD_NAME: publicEnv('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME'),
 
   // App URLs
-  APP_URL: publicEnv('NEXT_PUBLIC_APP_URL', 'https://menumatee.vercel.app'),
+  APP_URL: publicEnv('NEXT_PUBLIC_APP_URL'),
 
   // Business contact (used on landing page)
   WHATSAPP_CONTACT_NUMBER: publicEnv('NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER', '917425959111'),
@@ -62,7 +62,7 @@ export const env = {
   ADMIN_EMAIL: publicEnv('ADMIN_EMAIL', ''),
 
   // NextAuth URL (server only but non-fatal if missing — NextAuth auto-detects)
-  NEXTAUTH_URL: publicEnv('NEXTAUTH_URL', 'https://menumatee.vercel.app'),
+  NEXTAUTH_URL: publicEnv('NEXTAUTH_URL'),
 
   // ─── Server-only vars via lazy getters ─────────────────────────────────────
   // These are only evaluated when accessed, so they won't crash client bundles.

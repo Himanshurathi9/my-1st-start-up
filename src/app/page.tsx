@@ -33,6 +33,8 @@ import {
 } from 'lucide-react'
 
 /* ── WhatsApp helper (uses NEXT_PUBLIC_ env — NO hardcoded numbers) ── */
+import { getBaseUrl } from '@/lib/getBaseUrl'
+
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER || '917425959111'
 const waLink = (msg: string) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
@@ -1390,7 +1392,7 @@ function DemoSection() {
   const [qrUrl, setQrUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    const demoUrl = typeof window !== 'undefined' ? `${window.location.origin}/menu/brew-house-demo` : 'https://menumate.in/menu/brew-house-demo'
+    const demoUrl = `${getBaseUrl()}/menu/brew-house-demo`
     QRCode.toDataURL(demoUrl, {
       width: 400,
       margin: 2,

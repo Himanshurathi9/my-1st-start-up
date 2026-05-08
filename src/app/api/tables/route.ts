@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { cloudinary } from '@/lib/cloudinary'
 import QRCode from 'qrcode'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 
 // GET: Fetch all tables for owner's restaurant + master QR
 export async function GET() {
@@ -39,7 +40,7 @@ export async function GET() {
     }
 
     // Generate master QR (walk-in / takeaway) as data URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const menuUrl = `${baseUrl}/menu/${restaurant.slug}`
     let masterQrUrl: string | null = null
 
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const menuUrl = `${baseUrl}/menu/${restaurant.slug}`
 
     console.log(`[POST /api/tables] Generating ${count} QR codes for restaurant: ${restaurant.name} (${restaurant.slug})`)
