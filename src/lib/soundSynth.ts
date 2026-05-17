@@ -502,3 +502,22 @@ export function synthRestoreAvailable(ctx: AudioContext, dest: AudioNode, volume
   osc.stop(t + 0.21)
   playNoiseBurst(ctx, dest, 2000, 8000, volume * 0.3, 0.005, 0.15, t)
 }
+
+/**
+ * SOUND 16 — WAITER CALL (Admin Panel)
+ * Pleasant double service bell ding
+ */
+export function synthWaiterCall(ctx: AudioContext, dest: AudioNode, volume: number) {
+  const t = ctx.currentTime + 0.01
+  playChime(ctx, dest, 1047, volume * 0.8, t, 0.4) // C6
+  playChime(ctx, dest, 1318, volume * 0.8, t + 0.15, 0.5) // E6
+}
+
+/**
+ * SOUND 17 — BILL CALL (Admin Panel)
+ * Pleasant high chime
+ */
+export function synthBillCall(ctx: AudioContext, dest: AudioNode, volume: number) {
+  const t = ctx.currentTime + 0.01
+  playChime(ctx, dest, 1568, volume * 0.85, t, 0.6) // G6
+}

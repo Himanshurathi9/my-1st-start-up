@@ -3,74 +3,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Bell, Volume2, VolumeX } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { playWaiterCall, playBillCall, getDashSoundEnabled, setDashSound, touchUnlock } from '@/lib/soundManager'
 
 interface AdminNotificationListenerProps {
   restaurantId: string
 }
 
-// ─── Sound URLs ───────────────────────────────────────────────
-const WAITER_SOUND_URL = 'https://assets.mixkit.co/sfx/preview/mixkit-hotel-bell-ding-556.mp3'
-const BILL_SOUND_URL = 'https://assets.mixkit.co/sfx/preview/mixkit-alert-quick-chime-766.mp3'
-
-// ─── Preloaded Audio elements (singleton) ─────────────────────
-let waiterAudio: HTMLAudioElement | null = null
-let billAudio: HTMLAudioElement | null = null
-let audioPreloaded = false
-
-function preloadAudioFiles() {
-  if (audioPreloaded) return
-  audioPreloaded = true
-
-  try {
-    waiterAudio = new Audio(WAITER_SOUND_URL)
-    waiterAudio.preload = 'auto'
-    billAudio = new Audio(BILL_SOUND_URL)
-    billAudio.preload = 'auto'
-    console.log('[AdminListener] Audio files preloaded')
-  } catch (err) {
-    console.error('[AdminListener] Failed to preload audio:', err)
-  }
-}
-
-// NOTE: Audio preload is triggered inside the component via useEffect,
-// not at module level — module-level document access breaks Turbopack SSR parsing.
-
 // ─── Sound playback ───────────────────────────────────────────
 function playNotificationSound(type: 'waiter' | 'bill') {
-  preloadAudioFiles() // Ensure loaded
-
-  const audio = type === 'waiter' ? waiterAudio : billAudio
-  if (!audio) {
-    console.warn(`[AdminListener] Audio not available for ${type}`)
-    return
+  if (type === 'waiter') {
+    playWaiterCall()
+  } else {
+    playBillCall()
   }
-
-  // Clone to allow overlapping sounds (if two notifications arrive fast)
-  const clone = audio.cloneNode(true) as HTMLAudioElement
-  clone.volume = 0.7
-  clone.play().catch((err) => {
-    console.warn(`[AdminListener] Audio play failed for ${type}:`, err?.message)
-  })
-
   console.log(`[AdminListener] ${type} sound played`)
-}
-
-// ─── localStorage helpers ─────────────────────────────────────
-const SOUND_PREF_KEY = 'menumate_sound_enabled'
-
-function loadSoundPref(): boolean {
-  try {
-    const v = localStorage.getItem(SOUND_PREF_KEY)
-    if (v === 'true') return true
-    if (v === 'false') return false
-  } catch { /* ignore */ }
-  return false // Default: sounds off
-}
-
-function saveSoundPref(enabled: boolean) {
-  try {
-    localStorage.setItem(SOUND_PREF_KEY, String(enabled))
-  } catch { /* ignore */ }
 }
 
 // ─── Processed notifications set (deduplication) ──────────────
@@ -126,13 +72,13 @@ export default function AdminNotificationListener({ restaurantId }: AdminNotific
 
   // Load sound preference on mount + register preload listeners safely in browser
   useEffect(() => {
-    const savedPref = loadSoundPref()
+    const savedPref = getDashSoundEnabled()
     setSoundsEnabled(savedPref)
     console.log('[AdminListener] Sound pref loaded:', savedPref, 'restaurantId:', restaurantId)
 
-    // Register audio preload on first user interaction (safe — inside useEffect, client only)
+    // Register audio unlock on first user interaction (safe — inside useEffect, client only)
     const doPreload = () => {
-      preloadAudioFiles()
+      touchUnlock()
       document.removeEventListener('click', doPreload)
       document.removeEventListener('touchstart', doPreload)
     }
@@ -178,10 +124,10 @@ export default function AdminNotificationListener({ restaurantId }: AdminNotific
 
     const newValue = !soundsEnabled
     setSoundsEnabled(newValue)
-    saveSoundPref(newValue)
+    setDashSound(newValue)
     console.log('[AdminListener] Sound toggled:', newValue)
     if (newValue) {
-      preloadAudioFiles()
+      touchUnlock()
       setTimeout(() => playNotificationSound('waiter'), 100)
       toast.success('🔔 Notification sounds enabled!')
     } else {

@@ -35,6 +35,8 @@ import {
   synthPhotoUploaded,
   synthOutOfStock,
   synthRestoreAvailable,
+  synthWaiterCall,
+  synthBillCall,
 } from './soundSynth'
 
 // ─── Storage keys ──────────────────────────────────────────────────────────────
@@ -62,6 +64,8 @@ const VOL = {
   photoUploaded: 0.25,
   outOfStock: 0.18,
   restoreAvailable: 0.18,
+  waiterCall: 0.35,
+  billCall: 0.35,
 } as const
 
 // ─── State ─────────────────────────────────────────────────────────────────────
@@ -367,4 +371,20 @@ export function playRestoreAvailable() {
   const c = ctx(); const d = dest()
   if (!c || !d) return
   enqueueSound(() => synthRestoreAvailable(c, d, VOL.restoreAvailable), 250)
+}
+
+/** Sound 16 — Waiter Call */
+export function playWaiterCall() {
+  if (!isDashSoundOn()) return
+  const c = ctx(); const d = dest()
+  if (!c || !d) return
+  enqueueSound(() => synthWaiterCall(c, d, VOL.waiterCall), 600)
+}
+
+/** Sound 17 — Bill Call */
+export function playBillCall() {
+  if (!isDashSoundOn()) return
+  const c = ctx(); const d = dest()
+  if (!c || !d) return
+  enqueueSound(() => synthBillCall(c, d, VOL.billCall), 600)
 }
